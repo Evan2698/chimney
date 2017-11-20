@@ -1,2 +1,2 @@
 # climbwall
-access network
+access network for everyone
