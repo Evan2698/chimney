@@ -1,6 +1,7 @@
 package core
 
 import (
+	"climbwall/utils"
 	"time"
 	"encoding/json"
 	"io/ioutil"
@@ -33,9 +34,18 @@ func Parse(path string) (config *AppConfig, err error) {
 	config = &AppConfig{}
 	if err = json.Unmarshal(data, config); err != nil {
 		return nil, err
-	}
+	}	
 	
 	config.Timeout = int (time.Duration(config.Timeout) * time.Second)
 	
 	return config, nil
+}
+
+
+func Dump_config(config * AppConfig) {
+	utils.Logger.Print("server :", config.Server)
+	utils.Logger.Print("server_port :", config.ServerPort)
+	utils.Logger.Print("local_port :", config.LocalPort)
+	utils.Logger.Print("password :", config.Password)
+	utils.Logger.Print("timeout :", config.Timeout)
 }

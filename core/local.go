@@ -14,26 +14,34 @@ func connect_server(remote net.Conn, config * AppConfig) (iv []byte, err error) 
 
 	n, err := remote.Write([]byte{0x05, 0x01})
 	if (err != nil || n < 0){
-		utils.Logger.Fatalln("can not write 0x5 to server!")
+		utils.Logger.Print("can not write 0x5 to server!")
 		return nil, errors.New("can not write socks 5 flag to server!")
 	}
 
 	buf := make([]byte, 256)
 	n, err =  remote.Read(buf)
 	if (err != nil || buf[0] != 0x5 || buf[1] !=0x2 ) {
-		utils.Logger.Fatalln("can not from server")
-		return nil, errors.New("can not read from server!!!!")
+		utils.Logger.Print("can not from server", err)
+		return nil, errors.New("no response for authen.")
 	}
+
+	utils.Logger.Print("Server Buf  ", buf)
 
 	iv = buf[ 2 : 2 + 12 ]
 
+	utils.Logger.Print("IV  ", iv)
+
 	enCode, err := sercurity.Compress([]byte(config.Password), iv, sercurity.MakeCompressKey(config.Password))
 	if (err != nil) {
-		utils.Logger.Fatalln("can not encrypt password!!!")
+		utils.Logger.Print("can not encrypt password!!!")
 		return nil, errors.New("can not encrypt password!!!")
 	}
 
+	utils.Logger.Print("encode  ", enCode, len(enCode))
+
 	hmac := sercurity.MakeMacHash(iv, config.Password)	
+
+	utils.Logger.Print("HashHAMC  ", hmac, len(hmac))
 
 	outLen := 2 + len(enCode) + 1 + len(hmac)
 	
@@ -41,11 +49,14 @@ func connect_server(remote net.Conn, config * AppConfig) (iv []byte, err error) 
 
 	outBuf[0] = 0x5
 	outBuf[1] = (byte)(len(enCode))
-	ss :=  append( outBuf, enCode...)
-	ss = append(ss, []byte{0x1}...)
-	ss = append(ss, hmac...)
+	copy(outBuf[2:2 + len(enCode)], enCode)
+	outBuf[2 + len(enCode)] = (byte)(len(hmac))
+	copy(outBuf[2 + len(enCode) + 1: ], hmac)
 	
-	n, err = remote.Write(ss)
+
+	utils.Logger.Print("send content  ", outBuf)
+	
+	n, err = remote.Write(outBuf)
 	if (err != nil) {
 		return nil, errors.New("write password to server ")
 	}
@@ -80,6 +91,9 @@ func handle_local_server(someone net.Conn, config * AppConfig, iv []byte, remote
 	len_content := n - 2 - 4
 	content := buf[4 : 4 + len_content]
 
+	utils.Logger.Print("domain", content)
+	utils.Logger.Print("origin", buf)
+
 	encode, err := sercurity.Compress(content, iv, sercurity.MakeCompressKey(config.Password))
 	if err != nil {
 		someone.Write([]byte{0x05, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
@@ -87,8 +101,13 @@ func handle_local_server(someone net.Conn, config * AppConfig, iv []byte, remote
 		return errors.New("encrypt the content failed!!!")
 	}
 
-	out := append(buf[0: 4], encode...)
-	out = append(out, buf[n-2: n]...)
+	out := make([]byte, len(encode) + 2 + 4 + 1)
+	copy(out[0:4], buf[0:4])
+	out[4]= byte (len(encode))
+	copy(out[5: 5 + len(encode)], encode )
+	copy(out[5 + len(encode): ], buf[n-2:] )
+
+	utils.Logger.Print("new____+++", out)
 
 	n, err = remote.Write(out)
 	if err != nil {
@@ -109,13 +128,11 @@ func handle_local_server(someone net.Conn, config * AppConfig, iv []byte, remote
 		return errors.New("server connect failed, but response return back.")
 	}
 	
-	b := make([]byte, 1)
-	
-	b[0] = byte (config.LocalPort & 0xff)
-	hello := append([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00}, b...)
-	b[0] = byte ((config.LocalPort  >> 8) & 0xff) 
-	hello = append(hello, b...)
-	n, err = someone.Write(hello)
+	b := make([]byte, 10)
+	copy(b[0:8], []byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00})
+	b[8] = byte (config.LocalPort & 0xff)
+	b[9] = byte ((config.LocalPort  >> 8) & 0xff) 
+	n, err = someone.Write(b)
 	if err != nil || n < 0 {	
 		utils.Logger.Print("write to client response failed", err)
 		return errors.New("write to client response failed")
@@ -131,13 +148,13 @@ func hand_local_routine(someone net.Conn, config * AppConfig) {
 	buf := make([]byte, 530)
 	n, err := someone.Read(buf)
 	if err != nil || 0 >= n || 0x5 != buf[0] {
-		utils.Logger.Fatal("read error form", err, "read bytes:", n)
+		utils.Logger.Print("read error form", err, "read bytes:", n)
 		return
 	}
 
 	n, err = someone.Write([]byte{0x05, 0x00})
 	if (err != nil) {
-		utils.Logger.Fatalln("write to brower or other failed!", err)
+		utils.Logger.Print("write to brower or other failed!", err)
 		return
 	}
 
@@ -145,7 +162,7 @@ func hand_local_routine(someone net.Conn, config * AppConfig) {
 	
 	remote, err := net.Dial("tcp", host)
     if (err != nil) {
-		utils.Logger.Fatalln("can not connect server", host)
+		utils.Logger.Print("can not connect server", host)
 		return
 	}
 
@@ -153,13 +170,13 @@ func hand_local_routine(someone net.Conn, config * AppConfig) {
 
 	iv, err := connect_server(remote, config)
 	if (err != nil) {
-		utils.Logger.Fatalln("can not connect server", err)
+		utils.Logger.Print("can not connect server", err)
 		return
 	}
 
 	err = handle_local_server(someone, config, iv, remote)
 	if (err != nil) {
-		utils.Logger.Fatalln("can not handle brower and server!!", err)
+		utils.Logger.Print("can not handle brower and server!!", err)
 		return
 	}
 
@@ -190,7 +207,7 @@ func Run_Local_routine(config * AppConfig){
 	
 		all, err := net.Listen("tcp", "127.0.0.1" + ":"+ strconv.Itoa(config.LocalPort))
 		if err != nil {	
-			utils.Logger.Fatal("local listen on  ip:port 127.0.0.1:", strconv.Itoa(config.ServerPort))
+			utils.Logger.Print("local listen on  ip:port 127.0.0.1:", strconv.Itoa(config.ServerPort))
 			os.Exit(1)
 		}
 	
@@ -199,7 +216,7 @@ func Run_Local_routine(config * AppConfig){
 		for {
 			someone, err := all.Accept()
 			if err != nil {
-				utils.Logger.Fatal("remote socket failed to open", err)
+				utils.Logger.Print("remote socket failed to open", err)
 				continue
 			}
 			

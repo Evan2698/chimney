@@ -32,21 +32,21 @@ func wait_s(){
 }
 
 
-
 func main(){
 
-	utils.Logger.Print(".................")
+	utils.Logger.Print("server log...")
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
-		utils.Logger.Fatal("can not combin config file path!")
+		utils.Logger.Print("can not combin config file path!")
 		os.Exit(1)
 	}
-
+   
 	config, err := core.Parse(dir + "/config.json")
 	if err != nil {
-		utils.Logger.Fatal("load config file failed!")
+		utils.Logger.Print("load config file failed!")
 		os.Exit(1)
 	}
+	core.Dump_config(config)
 
 	go run_server(config)
 
