@@ -107,7 +107,7 @@ func handle_local_server(someone net.Conn, config * AppConfig, iv []byte, remote
 	copy(out[5: 5 + len(encode)], encode )
 	copy(out[5 + len(encode): ], buf[n-2:] )
 
-	utils.Logger.Print("new____+++", out)
+	//utils.Logger.Print("new____+++", out)
 
 	n, err = remote.Write(out)
 	if err != nil {
@@ -125,6 +125,7 @@ func handle_local_server(someone net.Conn, config * AppConfig, iv []byte, remote
 
 	if (buf[1] != 0x00 ) {
 		someone.Write([]byte{0x05, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
+		utils.Logger.Print("can not support it!!!")
 		return errors.New("server connect failed, but response return back.")
 	}
 	

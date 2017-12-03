@@ -73,21 +73,21 @@ func (ssocket *SSocketWrapper) WriteFromRaw(raw net.Conn) (err error){
 		return err
 	}
 
-	out, err := sercurity.Compress(buf, ssocket.iv, sercurity.MakeCompressKey(ssocket.cipher))
+	//utils.Logger.Print("bowser content: ", buf[0:rn])
+
+	out, err := sercurity.Compress(buf[0:rn], ssocket.iv, sercurity.MakeCompressKey(ssocket.cipher))
 	if err != nil {
 		utils.Logger.Print("content encrypt failed! ", err)
 		return err
 	}
 
-	on, err := ssocket.src_socket.Write(utils.Int2byte((uint32)(len(out))))
+	start := utils.Int2byte((uint32)(len(out)))
+	ll := append(start, out...)
+	//utils.Logger.Print("bowser content:(ALL): ", ll)
+
+	on, err := ssocket.src_socket.Write(ll)
 	if err != nil {
 		utils.Logger.Print("write content to SSocket failed! ", err, "write bytes: ", on, "bytes.")
-		return err
-	}
-
-	n, err := ssocket.src_socket.Write(out)
-	if err != nil {
-		utils.Logger.Print("write content to SSocket failed! ", err, "write bytes: ", n, "bytes.")
 		return err
 	}
 
