@@ -91,8 +91,8 @@ func handle_local_server(someone net.Conn, config * AppConfig, iv []byte, remote
 	len_content := n - 2 - 4
 	content := buf[4 : 4 + len_content]
 
-	utils.Logger.Print("domain", content)
-	utils.Logger.Print("origin", buf)
+	//utils.Logger.Print("domain", content)
+	//utils.Logger.Print("origin", buf)
 
 	encode, err := sercurity.Compress(content, iv, sercurity.MakeCompressKey(config.Password))
 	if err != nil {
@@ -107,7 +107,7 @@ func handle_local_server(someone net.Conn, config * AppConfig, iv []byte, remote
 	copy(out[5: 5 + len(encode)], encode )
 	copy(out[5 + len(encode): ], buf[n-2:] )
 
-	utils.Logger.Print("new____+++", out)
+	//utils.Logger.Print("new____+++", out)
 
 	n, err = remote.Write(out)
 	if err != nil {

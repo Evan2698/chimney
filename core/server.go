@@ -70,7 +70,7 @@ func handshark(someone net.Conn, config * AppConfig, salt []byte) error {
 	}
 
 	hmac1 := sercurity.MakeMacHash(salt, string(user))
-	utils.Logger.Print("hmac1  ", hmac1)
+	//utils.Logger.Print("hmac1  ", hmac1)
 
 	if (hmac.Equal(hmac1, passwordbytes)) {
 		
@@ -107,7 +107,7 @@ func handleConnect(someone net.Conn, config * AppConfig, salt []byte) (addr stri
 		return "", errors.New("does not support other method except connect")
 	}
 
-	utils.Logger.Println("accesss address ", buf)
+	//utils.Logger.Println("accesss address ", buf)
 	var cLen int
 	cLen = (int)(buf[4])
 	content, err := sercurity.Uncompress(buf[5 : 5 + cLen], salt, sercurity.MakeCompressKey(config.Password))
@@ -115,7 +115,7 @@ func handleConnect(someone net.Conn, config * AppConfig, salt []byte) (addr stri
 		return "", errors.New("does not parse the address from CC")
 	}
 
-	utils.Logger.Println("domain content: ", content)
+	//utils.Logger.Println("domain content: ", content)
 
 	var dIP string
 	switch buf[3] &  0xf {
@@ -124,7 +124,7 @@ func handleConnect(someone net.Conn, config * AppConfig, salt []byte) (addr stri
 		dIP = net.IP(content).String()
 	case 0x03:
 		//	DOMAINNAME: X'03'
-		dIP = net.IP(content).String()
+		dIP = string(content)
 	case 0x04:
 		//	IP V6 address: X'04'
 		dIP = net.IP(content).String()
