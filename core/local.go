@@ -25,7 +25,7 @@ func connect_server(remote net.Conn, config * AppConfig) (iv []byte, err error) 
 		return nil, errors.New("no response for authen.")
 	}
 
-	utils.Logger.Print("Server Buf  ", buf)
+	//utils.Logger.Print("Server Buf  ", buf)
 
 	iv = buf[ 2 : 2 + 12 ]
 
@@ -37,11 +37,11 @@ func connect_server(remote net.Conn, config * AppConfig) (iv []byte, err error) 
 		return nil, errors.New("can not encrypt password!!!")
 	}
 
-	utils.Logger.Print("encode  ", enCode, len(enCode))
+	//utils.Logger.Print("encode  ", enCode, len(enCode))
 
 	hmac := sercurity.MakeMacHash(iv, config.Password)	
 
-	utils.Logger.Print("HashHAMC  ", hmac, len(hmac))
+	//utils.Logger.Print("HashHAMC  ", hmac, len(hmac))
 
 	outLen := 2 + len(enCode) + 1 + len(hmac)
 	
@@ -91,7 +91,7 @@ func handle_local_server(someone net.Conn, config * AppConfig, iv []byte, remote
 	len_content := n - 2 - 4
 	content := buf[4 : 4 + len_content]
 
-	//utils.Logger.Print("domain", content)
+	//utils.Logger.Print("domain|", content, "|")
 	//utils.Logger.Print("origin", buf)
 
 	encode, err := sercurity.Compress(content, iv, sercurity.MakeCompressKey(config.Password))
@@ -107,7 +107,7 @@ func handle_local_server(someone net.Conn, config * AppConfig, iv []byte, remote
 	copy(out[5: 5 + len(encode)], encode )
 	copy(out[5 + len(encode): ], buf[n-2:] )
 
-	//utils.Logger.Print("new____+++", out)
+	utils.Logger.Print("new____+++", out)
 
 	n, err = remote.Write(out)
 	if err != nil {
@@ -207,7 +207,7 @@ func Run_Local_routine(config * AppConfig){
 	
 		all, err := net.Listen("tcp", "127.0.0.1" + ":"+ strconv.Itoa(config.LocalPort))
 		if err != nil {	
-			utils.Logger.Print("local listen on  ip:port 127.0.0.1:", strconv.Itoa(config.ServerPort))
+			utils.Logger.Print("local listen on   ip:port 127.0.0.1: failed!", strconv.Itoa(config.ServerPort), err)
 			os.Exit(1)
 		}
 	

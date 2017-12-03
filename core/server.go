@@ -107,7 +107,7 @@ func handleConnect(someone net.Conn, config * AppConfig, salt []byte) (addr stri
 		return "", errors.New("does not support other method except connect")
 	}
 
-	utils.Logger.Println("accesss address ", buf)
+	//utils.Logger.Println("accesss address ", buf)
 	var cLen int
 	cLen = (int)(buf[4])
 	content, err := sercurity.Uncompress(buf[5 : 5 + cLen], salt, sercurity.MakeCompressKey(config.Password))
@@ -115,8 +115,8 @@ func handleConnect(someone net.Conn, config * AppConfig, salt []byte) (addr stri
 		return "", errors.New("does not parse the address from CC")
 	}
 
-	utils.Logger.Println("domain content: ", content)
-	utils.Logger.Println("String content: ", string(content))
+	//utils.Logger.Println("domain content: ", content)
+	//utils.Logger.Println("String content: ", string(content))
 
 	var dIP string
 	switch buf[3] &  0xf {
@@ -125,7 +125,7 @@ func handleConnect(someone net.Conn, config * AppConfig, salt []byte) (addr stri
 		dIP = net.IP(content).String()
 	case 0x03:
 		//	DOMAINNAME: X'03'
-		dIP = string(content)
+		dIP = string(content[1:])
 	case 0x04:
 		//	IP V6 address: X'04'
 		dIP = net.IP(content).String()
@@ -159,7 +159,7 @@ func handleRoutine(someone net.Conn, config * AppConfig) {
 	}
 
 	addr, err := handleConnect(someone, config, salt)
-	if (addr == "" || err != nil ){
+	if (addr == "" || err != nil || len(addr) == 0){
 		utils.Logger.Print("parse failed", err)
 		someone.Write([]byte{0x05, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 		return
@@ -167,8 +167,7 @@ func handleRoutine(someone net.Conn, config * AppConfig) {
 
 	
     utils.Logger.Print("address:   |", addr + "|")
-	remote, err := net.Dial("tcp", addr)
-	utils.Logger.Print("RESULT: ", err)
+	remote, err := net.Dial("tcp", addr)	
 	if err != nil {
 		if ne, ok := err.(*net.OpError); ok && (ne.Err == syscall.EMFILE || ne.Err == syscall.ENFILE) {
 			// log too many open file error
