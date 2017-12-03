@@ -115,7 +115,8 @@ func handleConnect(someone net.Conn, config * AppConfig, salt []byte) (addr stri
 		return "", errors.New("does not parse the address from CC")
 	}
 
-	utils.Logger.Println("domain content: ", content, string(content))
+	utils.Logger.Println("domain content: ", content)
+	utils.Logger.Println("String content: ", string(content))
 
 	var dIP string
 	switch buf[3] &  0xf {
@@ -164,14 +165,17 @@ func handleRoutine(someone net.Conn, config * AppConfig) {
 		return
 	}
 
+	
+    utils.Logger.Print("address:   |", addr + "|")
 	remote, err := net.Dial("tcp", addr)
+	utils.Logger.Print("RESULT: ", err)
 	if err != nil {
 		if ne, ok := err.(*net.OpError); ok && (ne.Err == syscall.EMFILE || ne.Err == syscall.ENFILE) {
 			// log too many open file error
 			// EMFILE is process reaches open file limits, ENFILE is system limit
-			utils.Logger.Print("dial error:", err)
+			utils.Logger.Print("dial error: ", err)
 		} else {
-			utils.Logger.Print("error connecting to:", addr, err)
+			utils.Logger.Print("error connecting to:  ", addr, err)
 		}
 
 		someone.Write([]byte{0x05, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
