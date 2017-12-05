@@ -51,7 +51,7 @@ func Uncompress(src []byte, iv []byte, key []byte) ([] byte, error){
 
 	plaintext, err := aesgcm.Open(nil, iv, src, nil)
 
-	return plaintext, nil
+	return plaintext, err
 
 }
 
