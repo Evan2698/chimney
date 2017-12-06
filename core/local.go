@@ -183,25 +183,31 @@ func hand_local_routine(someone net.Conn, config * AppConfig) {
 
 	ssl := NewSSocket(remote,config.Password, iv)
 
+	//done := make(chan string)
+	//defer close(done)
+
 	go func(sic * SSocketWrapper, client net.Conn) {
-		for ; ; {
-			neterr := sic.WriteFromRaw(client)
-			if (neterr != nil) {
-				utils.Logger.Println("copy completed or failed!(local)")
+		for {
+			neterr := sic.CopyFromRaw2C(client)
+			if neterr != nil {
+				utils.Logger.Println("failed or completed (remote--->C) ", neterr)
 				break
 			}
-
 		}
+
+		//done<-"done"
 	}(ssl,someone)
 
 
-	for ;;  {
-		neterr := ssl.Copy2RaW(someone)
-		if (neterr != nil) {
-			utils.Logger.Println("write error or write complete!!!(local)")
+	for {
+		neterr := ssl.CopyFromC2Raw(someone)
+		if neterr != nil {
+			utils.Logger.Println("failed or compeleted (C -->Remote)", neterr)
 			break
 		}
 	}
+
+	//<-done
 }
 
 func Run_Local_routine(config * AppConfig){

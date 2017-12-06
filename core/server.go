@@ -187,25 +187,30 @@ func handleRoutine(someone net.Conn, config * AppConfig) {
 
 	ssl := NewSSocket(someone, config.Password, salt)
 
+	//done := make(chan string)
+	//defer close(done)
+
 	go func(sic * SSocketWrapper, client net.Conn) {
-		for ; ; {
-			neterr := sic.Copy2RaW(client)
-			if (neterr != nil) {
-				utils.Logger.Println("copy completed or failed!")
+		for {
+			copy_err := sic.CopyFromC2Raw(client)
+			if copy_err != nil {
+				utils.Logger.Println("failed or completed (C--->remote)", copy_err)
 				break
 			}
-
 		}
+
+		//done<-"done"
 	}(ssl,remote)
 
 
-	for ;;  {
-		neterr := ssl.WriteFromRaw(remote)
-		if (neterr != nil) {
-			utils.Logger.Println("write error or write complete!!!")
+	for  {
+		copy_err := ssl.CopyFromRaw2C(remote)
+		if  copy_err != nil {
+			utils.Logger.Println("failed or compeleted (remote -->C)", copy_err)
 			break
 		}
 	}
+	//<-done
 }
 
 

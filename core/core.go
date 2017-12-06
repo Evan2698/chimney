@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	BF_SIZE =  8096
+	BF_SIZE =  5120
 )
 
 type SSocketWrapper struct {
@@ -27,49 +27,49 @@ func NewSSocket(ss net.Conn, c string, i []byte) *SSocketWrapper {
 }
 
 
-func (ssocket *SSocketWrapper) Copy2RaW(raw net.Conn) (err error) {
+func (ssocket *SSocketWrapper) CopyFromC2Raw(raw net.Conn) (err error) {
 
 	buf := make([]byte, 4)
 	n, err := ssocket.src_socket.Read(buf)
 	if err != nil || n <= 0 {
-		utils.Logger.Print("parse int from socket failed! ", err,  "bytes: ", n)
+		utils.Logger.Print("read length from C failed!", err,  "bytes: ", n)
 		return err
 	}
 
 	size := utils.Byte2int(buf);
-	if (size > 4096  * 4096) {
-		utils.Logger.Print("parse int from socket failed! ", err,  "bytes: ", n)
+	if (size > BF_SIZE  * BF_SIZE) {
+		utils.Logger.Print("out of memory: ", size)
 		return errors.New("out of memory size")
 	}
 
 	content := make([]byte, size)
 	cn, err := ssocket.src_socket.Read(content)
-	if err != nil || cn <= 0 {
-		utils.Logger.Print("parse content from socket failed! ", err,  "bytes: ", cn)
+	if err != nil {
+		utils.Logger.Print("Read the content from C failed ", err, " bytes: ", cn)
 		return err
 	}
 
 	out, err := sercurity.Uncompress(content, ssocket.iv, sercurity.MakeCompressKey(ssocket.cipher))
 	if err != nil {
-		utils.Logger.Print("content decrypt failed! ", err)
+		utils.Logger.Print("uncompressed content failed! ", err)
 		return err
 	}
 
 	on, err := raw.Write(out)
 	if err != nil {
-		utils.Logger.Print("write content to raw failed! ", err, "write bytes: ", on)
+		utils.Logger.Print("send to remote failed ", err, "write bytes: ", on)
 		return err
 	}
 
 	return nil
 }
 
-func (ssocket *SSocketWrapper) WriteFromRaw(raw net.Conn) (err error){
+func (ssocket *SSocketWrapper) CopyFromRaw2C(raw net.Conn) (err error){
 
 	buf := make([]byte, BF_SIZE)
 	rn, err := raw.Read(buf)
-	if err != nil || rn <= 0 {
-		utils.Logger.Print("read from raw socket ", err)
+	if err != nil{
+		utils.Logger.Print("read content from raw socket failed", err)
 		return err
 	}
 
@@ -77,7 +77,7 @@ func (ssocket *SSocketWrapper) WriteFromRaw(raw net.Conn) (err error){
 
 	out, err := sercurity.Compress(buf[0:rn], ssocket.iv, sercurity.MakeCompressKey(ssocket.cipher))
 	if err != nil {
-		utils.Logger.Print("content encrypt failed! ", err)
+		utils.Logger.Print("compress content failed! ", err)
 		return err
 	}
 
