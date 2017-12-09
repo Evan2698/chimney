@@ -146,6 +146,8 @@ func handle_local_server(someone net.Conn, config * AppConfig, iv []byte, remote
 func hand_local_routine(someone net.Conn, config * AppConfig) {
 	defer someone.Close()
 
+	utils.SetReadTimeOut(someone, config.Timeout)
+
 	buf := make([]byte, 530)
 	n, err := someone.Read(buf)
 	if err != nil || 0 >= n || 0x5 != buf[0] {
@@ -166,6 +168,7 @@ func hand_local_routine(someone net.Conn, config * AppConfig) {
 		utils.Logger.Print("can not connect server", host)
 		return
 	}
+	utils.SetReadTimeOut(remote, config.Timeout)
 
 	defer remote.Close()
 

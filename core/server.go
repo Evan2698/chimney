@@ -148,6 +148,7 @@ func handleConnect(someone net.Conn, config * AppConfig, salt []byte) (addr stri
 
 func handleRoutine(someone net.Conn, config * AppConfig) {
 
+	utils.SetReadTimeOut(someone, config.Timeout)
 	salt := sercurity.MakeSalt()
 
 	defer someone.Close()
@@ -182,6 +183,8 @@ func handleRoutine(someone net.Conn, config * AppConfig) {
 	}
 
 	defer remote.Close()
+
+	utils.SetReadTimeOut(remote, config.Timeout)
 
 	someone.Write([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 
