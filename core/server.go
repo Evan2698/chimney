@@ -60,9 +60,9 @@ func handshark(someone net.Conn, config * AppConfig, salt []byte) error {
 	passwordLen = (uint32)(buf[2 + userNameLen])
 	passwordbytes := buf [ 2  + userNameLen + 1 : 2  + userNameLen + 1 + passwordLen ]
 
-	//utils.Logger.Print("userNameLen  ", userNameLen)
-	//utils.Logger.Print("passwordLen  ", passwordLen)
-	//utils.Logger.Print("passwordbytes  ", passwordbytes)
+	utils.Logger.Print("userNameLen  ", userNameLen)
+	utils.Logger.Print("passwordLen  ", passwordLen)
+	utils.Logger.Print("passwordbytes  ", passwordbytes)
 	user, err := sercurity.Uncompress(userNamebytes, salt, sercurity.MakeCompressKey(config.Password))
     if err != nil {
 		utils.Logger.Print("can not uncompress user name")
@@ -116,7 +116,7 @@ func handleConnect(someone net.Conn, config * AppConfig, salt []byte) (addr stri
 	}
 
 	//utils.Logger.Println("domain content: ", content)
-	//utils.Logger.Println("String content: ", string(content))
+	utils.Logger.Println("String content: ", string(content))
 
 	var dIP string
 	switch buf[3] &  0xf {
