@@ -1,6 +1,7 @@
 package main
 
 import (
+	"runtime"
 	"syscall"
 	"os/signal"
 	"path/filepath"
@@ -34,6 +35,8 @@ func wait_s(){
 
 func main(){
 
+	cpu := runtime.NumCPU()
+	runtime.GOMAXPROCS(cpu)
 	utils.Logger.Print("server log...")
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {

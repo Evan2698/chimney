@@ -1,6 +1,7 @@
 package core
 
 import (
+	"time"
 	"climbwall/sercurity"
 	"errors"
 	"climbwall/utils"
@@ -146,6 +147,7 @@ func handle_local_server(someone net.Conn, config * AppConfig, iv []byte, remote
 func hand_local_routine(someone net.Conn, config * AppConfig) {
 	defer someone.Close()
 
+	t1 := time.Now()
 	utils.SetReadTimeOut(someone, config.Timeout)
 
 	buf := make([]byte, 530)
@@ -209,6 +211,9 @@ func hand_local_routine(someone net.Conn, config * AppConfig) {
 			break
 		}
 	}
+
+	elapsed := time.Since(t1)
+	utils.Logger.Print("takes time:---------------", elapsed)
 
 	//<-done
 }

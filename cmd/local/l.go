@@ -6,7 +6,8 @@ import (
 	"path/filepath"
 	"os"
     "climbwall/utils"
-    "climbwall/core"
+	"climbwall/core"
+	"runtime"
 )
 
 
@@ -36,6 +37,8 @@ func wait_s(){
 
 func main(){
 
+	cpu := runtime.NumCPU()
+	runtime.GOMAXPROCS(cpu)
 	utils.Logger.Print("local log.....")
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {

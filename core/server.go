@@ -1,6 +1,7 @@
 package core
 
 import (
+	"time"
 	"bytes"
 	"syscall"
 	"encoding/binary"
@@ -148,6 +149,7 @@ func handleConnect(someone net.Conn, config * AppConfig, salt []byte) (addr stri
 
 func handleRoutine(someone net.Conn, config * AppConfig) {
 
+	t1 := time.Now() 
 	utils.SetReadTimeOut(someone, config.Timeout)
 	salt := sercurity.MakeSalt()
 
@@ -214,6 +216,9 @@ func handleRoutine(someone net.Conn, config * AppConfig) {
 		}
 	}
 	//<-done
+
+	elapsed := time.Since(t1)
+	utils.Logger.Print("takes time:---------------", elapsed)
 }
 
 
