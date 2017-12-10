@@ -191,26 +191,9 @@ func hand_local_routine(someone net.Conn, config * AppConfig) {
 	//done := make(chan string)
 	//defer close(done)
 
-	go func(sic * SSocketWrapper, client net.Conn) {
-		for {
-			neterr := sic.CopyFromRaw2C(client)
-			if neterr != nil {
-				utils.Logger.Println("failed or completed (remote--->C) ", neterr)
-				break
-			}
-		}
+	go Copy_RAW2C(ssl, someone)
 
-		//done<-"done"
-	}(ssl,someone)
-
-
-	for {
-		neterr := ssl.CopyFromC2Raw(someone)
-		if neterr != nil {
-			utils.Logger.Println("failed or compeleted (C -->Remote)", neterr)
-			break
-		}
-	}
+	Copy_C2RAW(ssl,someone)
 
 	elapsed := time.Since(t1)
 	utils.Logger.Print("takes time:---------------", elapsed)

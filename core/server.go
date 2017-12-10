@@ -195,27 +195,9 @@ func handleRoutine(someone net.Conn, config * AppConfig) {
 	//done := make(chan string)
 	//defer close(done)
 
-	go func(sic * SSocketWrapper, client net.Conn) {
-		for {
-			copy_err := sic.CopyFromC2Raw(client)
-			if copy_err != nil {
-				utils.Logger.Println("failed or completed (C--->remote)", copy_err)
-				break
-			}
-		}
+	go Copy_C2RAW(ssl ,remote)
 
-		//done<-"done"
-	}(ssl,remote)
-
-
-	for  {
-		copy_err := ssl.CopyFromRaw2C(remote)
-		if  copy_err != nil {
-			utils.Logger.Println("failed or compeleted (remote -->C)", copy_err)
-			break
-		}
-	}
-	//<-done
+	Copy_RAW2C(ssl, remote)
 
 	elapsed := time.Since(t1)
 	utils.Logger.Print("takes time:---------------", elapsed)

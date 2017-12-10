@@ -1,10 +1,10 @@
 package core
 
 import (
-	"errors"
+	//"errors"
 	"net"
 	"climbwall/utils"
-	"climbwall/sercurity"
+	//"climbwall/sercurity"
 
 )
 
@@ -29,7 +29,7 @@ func NewSSocket(ss net.Conn, c string, i []byte) *SSocketWrapper {
 
 func (ssocket *SSocketWrapper) CopyFromC2Raw(raw net.Conn) (err error) {
 
-	buf := make([]byte, 4)
+	/*buf := make([]byte, 4)
 	n, err := ssocket.src_socket.Read(buf)
 	if err != nil || n <= 0 {
 		utils.Logger.Print("read length from C failed!", err,  "bytes: ", n)
@@ -60,8 +60,14 @@ func (ssocket *SSocketWrapper) CopyFromC2Raw(raw net.Conn) (err error) {
 		return err
 	}
 
-	utils.Logger.Println("uncompress buffer ", out)
-	on, err := raw.Write(out)
+	utils.Logger.Println("uncompress buffer ", out)*/
+	buf := make([]byte, BF_SIZE)
+	n, err := ssocket.src_socket.Read(buf)
+	if err != nil {
+		
+		return err;
+	}
+	on, err := raw.Write(buf[0:n])
 	if err != nil {
 		utils.Logger.Print("send to remote failed ", err, "write bytes: ", on)
 		return err
@@ -73,30 +79,52 @@ func (ssocket *SSocketWrapper) CopyFromC2Raw(raw net.Conn) (err error) {
 func (ssocket *SSocketWrapper) CopyFromRaw2C(raw net.Conn) (err error){
 
 	buf := make([]byte, BF_SIZE)
-	rn, err := raw.Read(buf)
+	n, err := raw.Read(buf)
 	if err != nil{
 		utils.Logger.Print("read content from raw socket failed", err)
 		return err
 	}
 
-	utils.Logger.Print("bowser content: ", buf[0:rn])
+	utils.Logger.Print("bowser content: ", buf[0:n])
 
-	out, err := sercurity.Compress(buf[0:rn], ssocket.iv, sercurity.MakeCompressKey(ssocket.cipher))
-	if err != nil {
-		utils.Logger.Print("compress content failed! ", err)
-		return err
-	}
+	//out, err := sercurity.Compress(buf[0:n], ssocket.iv, sercurity.MakeCompressKey(ssocket.cipher))
+	//if err != nil {
+	//	utils.Logger.Print("compress content failed! ", err)
+	//	return err
+	//}
 
-	utils.Logger.Print("length of buf ", len(out))
-	start := utils.Int2byte((uint32)(len(out)))
-	ll := append(start, out...)
-	utils.Logger.Print("bowser content:(ALL): ", ll)
+	//utils.Logger.Print("length of buf ", len(out))
+	//start := utils.Int2byte((uint32)(len(out)))
+	//ll := append(start, out...)
+	//utils.Logger.Print("bowser content:(ALL): ", ll)
 
-	on, err := ssocket.src_socket.Write(ll)
+	on, err := ssocket.src_socket.Write(buf[0:n])
 	if err != nil {
 		utils.Logger.Print("write content to SSocket failed! ", err, "write bytes: ", on, "bytes.")
 		return err
 	}
 
 	return nil
+}
+
+func Copy_C2RAW(ssl *SSocketWrapper, raw net.Conn){
+
+	for {
+		neterr := ssl.CopyFromC2Raw(raw)
+		if neterr != nil {
+			utils.Logger.Println("failed or compeleted (C -->Remote)", neterr)
+			break
+		}
+	}
+}
+
+func Copy_RAW2C(ssl *SSocketWrapper, raw net.Conn){
+	
+	for {
+		neterr := ssl.CopyFromRaw2C(raw)
+		if neterr != nil {
+			utils.Logger.Println("failed or completed (remote--->C) ", neterr)
+			break
+		}
+	}
 }
