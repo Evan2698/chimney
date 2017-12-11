@@ -1,10 +1,10 @@
 package core
 
 import (
-	//"errors"
+	"errors"
 	"net"
 	"climbwall/utils"
-	//"climbwall/sercurity"
+	"climbwall/sercurity"
 
 )
 
@@ -29,7 +29,7 @@ func NewSSocket(ss net.Conn, c string, i []byte) *SSocketWrapper {
 
 func (ssocket *SSocketWrapper) CopyFromC2Raw(raw net.Conn) (err error) {
 
-	/*buf := make([]byte, 4)
+	buf := make([]byte, 4)
 	n, err := ssocket.src_socket.Read(buf)
 	if err != nil || n <= 0 {
 		utils.Logger.Print("read length from C failed!", err,  "bytes: ", n)
@@ -38,7 +38,7 @@ func (ssocket *SSocketWrapper) CopyFromC2Raw(raw net.Conn) (err error) {
 	utils.Logger.Println("read buffer size",  buf)
 
 	size := utils.Byte2int(buf);
-	if (size > BF_SIZE  * BF_SIZE) {
+	if (size > BF_SIZE  * BF_SIZE * 100) {
 		utils.Logger.Print("out of memory: ", size)
 		return errors.New("out of memory size")
 	}
@@ -54,20 +54,13 @@ func (ssocket *SSocketWrapper) CopyFromC2Raw(raw net.Conn) (err error) {
 
 	utils.Logger.Println("read C content", size)
 
-	out, err := sercurity.Uncompress(content, ssocket.iv, sercurity.MakeCompressKey(ssocket.cipher))
+	out, err := sercurity.DecompressWithChaCha20(content, ssocket.iv[:8], sercurity.MakeCompressKey(ssocket.cipher))
 	if err != nil {
 		utils.Logger.Print("uncompressed content failed! ", err)
 		return err
 	}
 
-	utils.Logger.Println("uncompress buffer ", out)*/
-	buf := make([]byte, BF_SIZE)
-	n, err := ssocket.src_socket.Read(buf)
-	if err != nil {
-		
-		return err;
-	}
-	on, err := raw.Write(buf[0:n])
+	on, err := raw.Write(out)
 	if err != nil {
 		utils.Logger.Print("send to remote failed ", err, "write bytes: ", on)
 		return err
@@ -87,18 +80,18 @@ func (ssocket *SSocketWrapper) CopyFromRaw2C(raw net.Conn) (err error){
 
 	utils.Logger.Print("bowser content: ", buf[0:n])
 
-	//out, err := sercurity.Compress(buf[0:n], ssocket.iv, sercurity.MakeCompressKey(ssocket.cipher))
-	//if err != nil {
-	//	utils.Logger.Print("compress content failed! ", err)
-	//	return err
-	//}
+	out, err := sercurity.CompressWithChaCha20(buf[0:n], ssocket.iv[:8], sercurity.MakeCompressKey(ssocket.cipher))
+	if err != nil {
+		utils.Logger.Print("compress content failed! ", err)
+		return err
+	}
 
-	//utils.Logger.Print("length of buf ", len(out))
-	//start := utils.Int2byte((uint32)(len(out)))
-	//ll := append(start, out...)
-	//utils.Logger.Print("bowser content:(ALL): ", ll)
+	utils.Logger.Print("length of buf ", len(out))
+	start := utils.Int2byte((uint32)(len(out)))
+	ll := append(start, out...)
+	utils.Logger.Print("bowser content:(ALL): ", ll)
 
-	on, err := ssocket.src_socket.Write(buf[0:n])
+	on, err := ssocket.src_socket.Write(ll)
 	if err != nil {
 		utils.Logger.Print("write content to SSocket failed! ", err, "write bytes: ", on, "bytes.")
 		return err

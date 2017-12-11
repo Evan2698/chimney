@@ -1,6 +1,7 @@
 package sercurity
 
 import (
+	"errors"
 	"crypto/sha256"
 	"io"
 	"crypto/rand"
@@ -11,7 +12,7 @@ import (
 	"encoding/hex"
 	"strings"
 	"crypto/hmac"
-	
+	"github.com/Yawning/chacha20"	
 )
 
 
@@ -75,4 +76,28 @@ func MakeMacHash(key []byte, message string) []byte {
 	h := hmac.New(sha256.New, key)
 	h.Write([]byte(message))
 	return h.Sum(nil)
+}
+
+
+func CompressWithChaCha20(src []byte, iv []byte, key []byte) ([] byte, error) {
+   if len(iv) != 8 || len(key) !=32 || len(src) == 0 {
+	   return nil, errors.New("parameter is invalid.")
+   }
+
+   dst := make([]byte, len(src))
+
+   a, err := chacha20.NewCipher(key, iv)
+   if err != nil {
+	   return nil, err
+   }
+
+   a.XORKeyStream(dst, src)
+
+   return dst, nil
+}
+
+
+func DecompressWithChaCha20(src []byte, iv []byte, key []byte) ([] byte, error) {
+	
+	return CompressWithChaCha20(src, iv, key)
 }
