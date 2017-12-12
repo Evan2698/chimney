@@ -4,7 +4,7 @@ Access network from china for everyone.
 
 
 
-#Version
+# Version
 
 [current] 0.1
 
@@ -16,7 +16,7 @@ Access network from china for everyone.
 **Note you have to have the vps or vm(except china).**
 
 
-#How to build
+# How to build
 change folder to src, then
 
 go build climbwall/cmd/server
