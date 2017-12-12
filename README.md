@@ -19,5 +19,7 @@ Access network from china for everyone.
 # How to build
 change folder to src, then
 
-go build climbwall/cmd/server
-go build climbwall/cmd/local
+1. go build climbwall/cmd/server
+2. go build climbwall/cmd/local
+
+
