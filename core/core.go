@@ -1,6 +1,7 @@
 package core
 
 import (
+	"io"
 	"errors"
 	"net"
 	"climbwall/utils"
@@ -29,26 +30,24 @@ func NewSSocket(ss net.Conn, c string, i []byte) *SSocketWrapper {
 
 func (ssocket *SSocketWrapper) CopyFromC2Raw(raw net.Conn) (err error) {
 
-	buf := make([]byte, 4)
-	n, err := ssocket.src_socket.Read(buf)
-	if err != nil || n <= 0 {
-		utils.Logger.Print("read length from C failed!", err,  "bytes: ", n)
+	buf, err := read_bytes_from_socket(ssocket.src_socket, 4)
+	if err != nil {
+		utils.Logger.Print("read length from C failed!", err)			
 		return err
 	}
 	utils.Logger.Println("read buffer size",  buf)
 
 	size := utils.Byte2int(buf);
-	if (size > BF_SIZE  * BF_SIZE * 100) {
+	if (size > BF_SIZE  * BF_SIZE * 100 || size == 0) {
 		utils.Logger.Print("out of memory: ", size)
 		return errors.New("out of memory size")
 	}
 
 	utils.Logger.Println("read content size", size)
 
-	content := make([]byte, size)
-	cn, err := ssocket.src_socket.Read(content)
+	content, err := read_bytes_from_socket(ssocket.src_socket, (int)(size))
 	if err != nil {
-		utils.Logger.Print("Read the content from C failed ", err, " bytes: ", cn)
+		utils.Logger.Print("Read the content from C failed ", err)
 		return err
 	}
 
@@ -121,3 +120,29 @@ func Copy_RAW2C(ssl *SSocketWrapper, raw net.Conn){
 		}
 	}
 }
+
+func read_bytes_from_socket(socket net.Conn, bytes int) ([]byte, error) {
+
+	buf := make([]byte, bytes)
+	index := 0
+	var err error
+	for {
+		 n, err := socket.Read(buf[index:])
+		 index = index + n
+		 if err != nil {
+			 break;
+		 }
+
+		 if index >= bytes  {
+			 break
+		 }
+	
+	}
+
+	if index < bytes && index != 0 && err == io.EOF {
+		utils.Logger.Println("can not run here!!!!!")
+		err = nil
+	}
+
+	return buf, err
+} 
