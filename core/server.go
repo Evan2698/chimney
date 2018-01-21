@@ -192,9 +192,6 @@ func handleRoutine(someone net.Conn, config * AppConfig) {
 
 	ssl := NewSSocket(someone, config.Password, salt)
 
-	//done := make(chan string)
-	//defer close(done)
-
 	go Copy_C2RAW(ssl ,remote)
 
 	Copy_RAW2C(ssl, remote)

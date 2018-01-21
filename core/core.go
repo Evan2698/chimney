@@ -139,6 +139,8 @@ func read_bytes_from_socket(socket net.Conn, bytes int) ([]byte, error) {
 	
 	}
 
+	//utils.Logger.Println("buf: ", buf, "   buffer size: ", index)
+
 	if index < bytes && index != 0 && err == io.EOF {
 		utils.Logger.Println("can not run here!!!!!")
 		err = nil
