@@ -1,20 +1,18 @@
 package utils
+
 import (
+	"io/ioutil"
+	"log"
 	"strconv"
 	"time"
-	"log"
-	//"os"
-	//"fmt"
-	"io/ioutil"
-	
 )
 
 var (
 	Logger *log.Logger
 )
 
-func init(){
-	
+func init() {
+
 	t := time.Now()
 	timestamp := strconv.FormatInt(t.UTC().UnixNano(), 10)
 	var logpath = "log_" + timestamp + ".txt"

@@ -81,7 +81,7 @@ func protect_socket(fd int) error {
 		usock.Close()
 	}()
 
-	err := usock.WriteFD(fd)
+	err = usock.WriteFD(fd)
 	if err != nil {
 		utils.Logger.Println("can not create unix socket", err)
 		return err
@@ -95,7 +95,7 @@ func protect_socket(fd int) error {
 
 	var b byte
 	b = 0x1
-	if r != nil and len(r) > 0 {
+	if len(r) > 0 {
 		b = ([]byte(r))[0]
 	}
 
