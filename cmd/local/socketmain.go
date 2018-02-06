@@ -13,7 +13,7 @@ func main() {
 		//176.122.157.41
 		//61.135.169.125
 		//61.135.169.125
-		conn, fd, err := core.Build_low_socket("176.122.157.41", 443)
+		conn, fd, err := core.Build_low_socket("61.135.169.125", 80)
 
 		if err != nil {
 			utils.Logger.Println("[golang] socket error", err)
