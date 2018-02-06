@@ -87,21 +87,16 @@ func protect_socket(fd int) error {
 		return err
 	}
 
-	r, err := usock.ReadMessage()
-	if err != nil {
-		utils.Logger.Println("read sendFD result", err)
+	buf := make([]byte, 1)
+	n, err := conn.Read(buf)
+	if err != null {
+		utils.Logger.Println("failed to send result!!!")
 		return err
 	}
 
-	var b byte
-	b = 0x1
-	if len(r) > 0 {
-		b = ([]byte(r))[0]
-	}
-
-	if b != 0 {
-		utils.Logger.Println("unix received failed!!", []byte(r))
-		return errors.New("unix received failed!!")
+	if n <= 0 || b[0] != 0 {
+		utils.Logger.Println("unix send failed!!", []byte(r))
+		return errors.New("unix protect socket failed!!")
 	}
 
 	return nil

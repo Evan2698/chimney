@@ -7,9 +7,29 @@ import (
 	"time"
 )
 
+type MyLog struct {
+	LogImp *log.Logger
+}
+
+func (l *MyLog) Print(v ...interface{}) {
+	l.LogImp.Print(v)
+}
+
+func (l *MyLog) Printf(format string, v ...interface{}) {
+	l.LogImp.Printf(format, v)
+}
+
+func (l *MyLog) Println(v ...interface{}) {
+	l.LogImp.Println(v)
+}
+
 var (
-	Logger *log.Logger
+	Logger *MyLog
 )
+
+func NewLog(l *log.Logger) *MyLog {
+	return &MyLog{l}
+}
 
 func init() {
 
@@ -22,7 +42,9 @@ func init() {
 		panic(err1)
 	}*/
 
-	Logger = log.New(ioutil.Discard, "", log.LstdFlags|log.Lshortfile)
-	//Logger = log.New(file, "", log.LstdFlags|log.Lshortfile)
+	thislog := log.New(ioutil.Discard, "", log.LstdFlags|log.Lshortfile)
+	//thislog = log.New(file, "", log.LstdFlags|log.Lshortfile)
+
+	Logger = NewLog(thislog)
 	Logger.Println("LogFile : " + logpath)
 }
