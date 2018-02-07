@@ -1,44 +1,42 @@
 package core
 
 import (
-	"io"
-	"errors"
-	"net"
-	"climbwall/utils"
 	"climbwall/sercurity"
-
+	"climbwall/utils"
+	"errors"
+	"io"
+	"net"
 )
 
 const (
-	BF_SIZE =  5120
+	BF_SIZE = 5120
 )
 
 type SSocketWrapper struct {
 	src_socket net.Conn
-	cipher string
-	iv []byte
+	cipher     string
+	iv         []byte
 }
 
 func NewSSocket(ss net.Conn, c string, i []byte) *SSocketWrapper {
-	return & SSocketWrapper {
-		src_socket : ss,
-		cipher : c, 
-		iv : i,		
+	return &SSocketWrapper{
+		src_socket: ss,
+		cipher:     c,
+		iv:         i,
 	}
 }
-
 
 func (ssocket *SSocketWrapper) CopyFromC2Raw(raw net.Conn) (err error) {
 
 	buf, err := read_bytes_from_socket(ssocket.src_socket, 4)
 	if err != nil {
-		utils.Logger.Print("read length from C failed!", err)			
+		utils.Logger.Print("read length from C failed!", err)
 		return err
 	}
-	utils.Logger.Println("read buffer size",  buf)
+	utils.Logger.Println("read buffer size", buf)
 
-	size := utils.Byte2int(buf);
-	if (size > BF_SIZE  * BF_SIZE * 100 || size == 0) {
+	size := utils.Byte2int(buf)
+	if size > BF_SIZE*BF_SIZE*100 || size == 0 {
 		utils.Logger.Print("out of memory: ", size)
 		return errors.New("out of memory size")
 	}
@@ -68,11 +66,11 @@ func (ssocket *SSocketWrapper) CopyFromC2Raw(raw net.Conn) (err error) {
 	return nil
 }
 
-func (ssocket *SSocketWrapper) CopyFromRaw2C(raw net.Conn) (err error){
+func (ssocket *SSocketWrapper) CopyFromRaw2C(raw net.Conn) (err error) {
 
 	buf := make([]byte, BF_SIZE)
 	n, err := raw.Read(buf)
-	if err != nil{
+	if err != nil {
 		utils.Logger.Print("read content from raw socket failed", err)
 		return err
 	}
@@ -99,7 +97,7 @@ func (ssocket *SSocketWrapper) CopyFromRaw2C(raw net.Conn) (err error){
 	return nil
 }
 
-func Copy_C2RAW(ssl *SSocketWrapper, raw net.Conn){
+func Copy_C2RAW(ssl *SSocketWrapper, raw net.Conn) {
 
 	for {
 		neterr := ssl.CopyFromC2Raw(raw)
@@ -108,10 +106,11 @@ func Copy_C2RAW(ssl *SSocketWrapper, raw net.Conn){
 			break
 		}
 	}
+	StatPackage(0, 0)
 }
 
-func Copy_RAW2C(ssl *SSocketWrapper, raw net.Conn){
-	
+func Copy_RAW2C(ssl *SSocketWrapper, raw net.Conn) {
+
 	for {
 		neterr := ssl.CopyFromRaw2C(raw)
 		if neterr != nil {
@@ -119,6 +118,8 @@ func Copy_RAW2C(ssl *SSocketWrapper, raw net.Conn){
 			break
 		}
 	}
+
+	StatPackage(0, 0)
 }
 
 func read_bytes_from_socket(socket net.Conn, bytes int) ([]byte, error) {
@@ -127,16 +128,16 @@ func read_bytes_from_socket(socket net.Conn, bytes int) ([]byte, error) {
 	index := 0
 	var err error
 	for {
-		 n, err := socket.Read(buf[index:])
-		 index = index + n
-		 if err != nil {
-			 break;
-		 }
+		n, err := socket.Read(buf[index:])
+		index = index + n
+		if err != nil {
+			break
+		}
 
-		 if index >= bytes  {
-			 break
-		 }
-	
+		if index >= bytes {
+			break
+		}
+
 	}
 
 	//utils.Logger.Println("buf: ", buf, "   buffer size: ", index)
@@ -147,4 +148,4 @@ func read_bytes_from_socket(socket net.Conn, bytes int) ([]byte, error) {
 	}
 
 	return buf, err
-} 
+}
