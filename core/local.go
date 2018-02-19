@@ -160,13 +160,14 @@ func hand_local_routine(someone net.Conn, config *AppConfig) {
 
 	host := net.JoinHostPort(config.Server, strconv.Itoa(config.ServerPort))
 
-	remote, err := Build_low_socket(config.Server, config.ServerPort)
+	conSocket, err := Build_low_socket(config.Server, config.ServerPort)
 	if err != nil {
 		utils.Logger.Print("can not connect server", host)
 		return
 	}
 
-	defer remote.Close()
+	remote := conSocket.Remote
+	defer conSocket.Close()
 
 	utils.SetReadTimeOut(remote, config.Timeout)
 

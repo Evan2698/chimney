@@ -11,8 +11,9 @@ import (
 	"syscall"
 )
 
-func Build_low_socket(ipString string, port int) (net.Conn, error) {
+func Build_low_socket(ipString string, port int) (*CommonSocket, error) {
 
+	init := false
 	ip := net.ParseIP(ipString)
 	ipa := ip.To4()
 
@@ -28,7 +29,9 @@ func Build_low_socket(ipString string, port int) (net.Conn, error) {
 	}
 
 	defer func() {
-		syscall.Close(fd)
+		if !init {
+			syscall.Close(fd)
+		}
 	}()
 
 	err = protect_socket(fd)
@@ -52,7 +55,12 @@ func Build_low_socket(ipString string, port int) (net.Conn, error) {
 		return nil, err
 	}
 
-	return conn, nil
+	init = true
+	return &CommonSocket{
+		Remote : conn,
+		Fd : fd,
+	}
+	, nil
 }
 
 func protect_socket(fd int) error {
@@ -96,4 +104,11 @@ func protect_socket(fd int) error {
 	}
 
 	return nil
+}
+
+func (con *CommonSocket) Close() {
+	con.Remote.Close()
+	if con.Fd != 0 {
+		syscall.Close(con.Fd)
+	}
 }
