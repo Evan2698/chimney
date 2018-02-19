@@ -140,7 +140,12 @@ func handle_local_server(someone net.Conn, config *AppConfig, iv []byte, remote 
 }
 
 func hand_local_routine(someone net.Conn, config *AppConfig) {
-	defer someone.Close()
+	utils.Logger.Print("route begin|||||||||||||||||||||||||||||||||||||")
+	defer func() {
+		someone.Close()
+		utils.Logger.Print("raw socket is closed!!!!!")
+		utils.Logger.Print("route end!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+	}()
 
 	t1 := time.Now()
 	utils.SetReadTimeOut(someone, config.Timeout)
@@ -167,7 +172,10 @@ func hand_local_routine(someone net.Conn, config *AppConfig) {
 	}
 
 	remote := conSocket.Remote
-	defer conSocket.Close()
+	defer func() {
+		conSocket.Close()
+		utils.Logger.Print("remote socket is closed!!!!!!!")
+	}()
 
 	utils.SetReadTimeOut(remote, config.Timeout)
 
@@ -185,21 +193,17 @@ func hand_local_routine(someone net.Conn, config *AppConfig) {
 
 	ssl := NewSSocket(remote, config.Password, iv)
 
-	input := make(chan string)
+	input := make(chan int)
 	defer close(input)
-
-	output := make(chan string)
-	defer close(output)
 
 	go Copy_RAW2C(ssl, someone, input)
 
-	Copy_C2RAW(ssl, someone, output)
+	Copy_C2RAW(ssl, someone, nil)
 
 	elapsed := time.Since(t1)
 	utils.Logger.Print("takes time:---------------", elapsed)
 
 	<-input
-	<-output
 }
 
 func Run_Local_routine(config *AppConfig) {

@@ -71,7 +71,7 @@ func (ssocket *SSocketWrapper) CopyFromRaw2C(raw net.Conn) (err error) {
 	buf := make([]byte, BF_SIZE)
 	n, err := raw.Read(buf)
 	if err != nil {
-		utils.Logger.Print("read content from raw socket failed", err)
+		utils.Logger.Print("read content from raw socket failed", err, "bytes: ", n)
 		return err
 	}
 
@@ -97,32 +97,42 @@ func (ssocket *SSocketWrapper) CopyFromRaw2C(raw net.Conn) (err error) {
 	return nil
 }
 
-func Copy_C2RAW(ssl *SSocketWrapper, raw net.Conn, ch chan string) {
+func Copy_C2RAW(ssl *SSocketWrapper, raw net.Conn, ch chan int) {
 
 	for {
 		neterr := ssl.CopyFromC2Raw(raw)
 		if neterr != nil {
 			utils.Logger.Println("failed or compeleted (C -->Remote)", neterr)
 			break
+		} else {
+			utils.Logger.Println("loop")
 		}
+
 	}
 
-	ch <- "done"
+	if ch != nil {
+		ch <- 0
+	}
+	utils.Logger.Println("done")
 	StatPackage(0, 0)
 }
 
-func Copy_RAW2C(ssl *SSocketWrapper, raw net.Conn, ch chan string) {
+func Copy_RAW2C(ssl *SSocketWrapper, raw net.Conn, ch chan int) {
 
 	for {
 		neterr := ssl.CopyFromRaw2C(raw)
 		if neterr != nil {
 			utils.Logger.Println("failed or completed (remote--->C) ", neterr)
 			break
+		} else {
+			utils.Logger.Println("loop raw")
 		}
 	}
 
-	ch <- "done"
-
+	if ch != nil {
+		ch <- 0
+	}
+	utils.Logger.Println("raw done")
 	StatPackage(0, 0)
 }
 
@@ -131,16 +141,19 @@ func read_bytes_from_socket(socket net.Conn, bytes int) ([]byte, error) {
 	buf := make([]byte, bytes)
 	index := 0
 	var err error
+	var n int
 	for {
-		n, err := io.ReadFull(socket, buf[index:])
+		n, err = io.ReadFull(socket, buf[index:])
 		utils.Logger.Println("read from socket size: ", n, err)
 		index = index + n
 		if err != nil {
+			utils.Logger.Println("error on read_bytes_from_socket ", n, err)
 			break
 		}
 
-		if index >= bytes {
+		if index >= bytes && index > 0 {
 			err = nil
+			utils.Logger.Println("read count for output ", index, err)
 			break
 		}
 
