@@ -128,13 +128,14 @@ func read_bytes_from_socket(socket net.Conn, bytes int) ([]byte, error) {
 	index := 0
 	var err error
 	for {
-		n, err := socket.Read(buf[index:])
+		n, err := io.ReadFull(socket, buf[index:])
 		index = index + n
 		if err != nil {
 			break
 		}
 
 		if index >= bytes {
+			err = nil
 			break
 		}
 
@@ -142,7 +143,7 @@ func read_bytes_from_socket(socket net.Conn, bytes int) ([]byte, error) {
 
 	//utils.Logger.Println("buf: ", buf, "   buffer size: ", index)
 
-	if index < bytes && index != 0 && err == io.EOF {
+	if index < bytes && index != 0 {
 		utils.Logger.Println("can not run here!!!!!")
 		err = nil
 	}
