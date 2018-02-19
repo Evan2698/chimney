@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"runtime"
 	"strconv"
 	"time"
 )
@@ -16,19 +15,19 @@ type MyLog struct {
 }
 
 func (l *MyLog) Print(v ...interface{}) {
-	_, file, line, _ := runtime.Caller(1)
-	l.LogImp.Print(file, line, v)
+	//_, file, line, _ := runtime.Caller(1)
+	//l.LogImp.Print(file, line, v)
 }
 
 func (l *MyLog) Printf(format string, v ...interface{}) {
-	_, file, line, _ := runtime.Caller(1)
-	l.LogImp.Print(file, line)
-	l.LogImp.Printf(format, v)
+	//_, file, line, _ := runtime.Caller(1)
+	//l.LogImp.Print(file, line)
+	//l.LogImp.Printf(format, v)
 }
 
 func (l *MyLog) Println(v ...interface{}) {
-	_, file, line, _ := runtime.Caller(1)
-	l.LogImp.Println(file, line, v)
+	//_, file, line, _ := runtime.Caller(1)
+	//l.LogImp.Println(file, line, v)
 }
 
 var (
@@ -50,7 +49,6 @@ func init() {
 		panic(err1)
 	}
 
-	//thislog := log.New(ioutil.Discard, "", log.LstdFlags|log.Lshortfile)
 	thislog := log.New(file, "", log.LstdFlags|log.Lshortfile)
 
 	Logger = NewLog(thislog)

@@ -105,7 +105,7 @@ func handleConnect(someone net.Conn, config *AppConfig, salt []byte) (addr strin
 		return "", errors.New("does not support other method except connect")
 	}
 
-	utils.Logger.Println("accesss address ", buf)
+	utils.Logger.Println("accesss address ", len(buf), err)
 	var cLen int
 	cLen = (int)(buf[4])
 	content, err := sercurity.Uncompress(buf[5:5+cLen], salt, sercurity.MakeCompressKey(config.Password))
@@ -113,8 +113,7 @@ func handleConnect(someone net.Conn, config *AppConfig, salt []byte) (addr strin
 		return "", errors.New("does not parse the address from CC")
 	}
 
-	utils.Logger.Println("domain content: ", content)
-	utils.Logger.Println("String content: ", string(content))
+	utils.Logger.Println("domain content: ", len(content))
 
 	var dIP string
 	switch buf[3] & 0xf {
