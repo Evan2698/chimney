@@ -7,7 +7,6 @@ import (
 	"net"
 	"os"
 	"strconv"
-	"syscall"
 	"time"
 )
 
@@ -161,14 +160,10 @@ func hand_local_routine(someone net.Conn, config *AppConfig) {
 
 	host := net.JoinHostPort(config.Server, strconv.Itoa(config.ServerPort))
 
-	remote, fd, err := Build_low_socket(config.Server, config.ServerPort)
+	remote, err := Build_low_socket(config.Server, config.ServerPort)
 	if err != nil {
 		utils.Logger.Print("can not connect server", host)
 		return
-	}
-
-	if fd >= 0 {
-		defer syscall.Close(fd)
 	}
 
 	defer remote.Close()

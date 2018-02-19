@@ -11,9 +11,8 @@ import (
 	"syscall"
 )
 
-func Build_low_socket(ipString string, port int) (net.Conn, int, error) {
+func Build_low_socket(ipString string, port int) (net.Conn, error) {
 
-	init := false
 	ip := net.ParseIP(ipString)
 	ipa := ip.To4()
 
@@ -25,25 +24,23 @@ func Build_low_socket(ipString string, port int) (net.Conn, int, error) {
 	fd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, syscall.IPPROTO_TCP)
 	if err != nil {
 		utils.Logger.Println("create socket Fd failed", ipString)
-		return nil, -1, err
+		return nil, err
 	}
 
 	defer func() {
-		if !init {
-			syscall.Close(fd)
-		}
+		syscall.Close(fd)
 	}()
 
 	err = protect_socket(fd)
 	if err != nil {
 		utils.Logger.Println("protect fd failed:  fd=", fd)
-		return nil, -1, err
+		return nil, err
 	}
 
 	err = syscall.Connect(fd, sa)
 	if err != nil {
 		utils.Logger.Println("connect the ip failed[ " + ipString + " ]")
-		return nil, -1, err
+		return nil, err
 	}
 
 	file := os.NewFile(uintptr(fd), "")
@@ -52,11 +49,10 @@ func Build_low_socket(ipString string, port int) (net.Conn, int, error) {
 	conn, err := net.FileConn(file)
 	if err != nil {
 		utils.Logger.Println("Create File object failed[ " + ipString + " ]")
-		return nil, -1, err
+		return nil, err
 	}
 
-	init = true
-	return conn, fd, nil
+	return conn, nil
 }
 
 func protect_socket(fd int) error {

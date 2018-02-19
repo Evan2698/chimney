@@ -7,11 +7,11 @@ import (
 	"strconv"
 )
 
-func Build_low_socket(ipString string, port int) (net.Conn, int, error) {
+func Build_low_socket(ipString string, port int) (net.Conn, error) {
 
 	host := net.JoinHostPort(ipString, strconv.Itoa(port))
 
 	conn, err := net.Dial("tcp", host)
 
-	return conn, -1, err
+	return conn, err
 }
