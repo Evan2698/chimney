@@ -64,7 +64,7 @@ func handshark(someone net.Conn, config *AppConfig, salt []byte) error {
 	utils.Logger.Print("passwordbytes  ", passwordbytes)
 	user, err := sercurity.Uncompress(userNamebytes, salt, sercurity.MakeCompressKey(config.Password))
 	if err != nil {
-		utils.Logger.Print("can not uncompress user name")
+		utils.Logger.Print("can not uncompress user name", err)
 		return err
 	}
 

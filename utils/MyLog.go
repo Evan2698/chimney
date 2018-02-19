@@ -3,8 +3,10 @@
 package utils
 
 import (
-	"io/ioutil"
+	"fmt"
 	"log"
+	"os"
+	"runtime"
 	"strconv"
 	"time"
 )
@@ -14,15 +16,19 @@ type MyLog struct {
 }
 
 func (l *MyLog) Print(v ...interface{}) {
-	l.LogImp.Print(v)
+	_, file, line, _ := runtime.Caller(1)
+	l.LogImp.Print(file, line, v)
 }
 
 func (l *MyLog) Printf(format string, v ...interface{}) {
+	_, file, line, _ := runtime.Caller(1)
+	l.LogImp.Print(file, line)
 	l.LogImp.Printf(format, v)
 }
 
 func (l *MyLog) Println(v ...interface{}) {
-	l.LogImp.Println(v)
+	_, file, line, _ := runtime.Caller(1)
+	l.LogImp.Println(file, line, v)
 }
 
 var (
@@ -38,14 +44,14 @@ func init() {
 	t := time.Now()
 	timestamp := strconv.FormatInt(t.UTC().UnixNano(), 10)
 	var logpath = "log_" + timestamp + ".txt"
-	/*var file, err1 = os.Create(logpath)
+	var file, err1 = os.Create(logpath)
 	if err1 != nil {
 		fmt.Print("can not create log file")
 		panic(err1)
-	}*/
+	}
 
-	thislog := log.New(ioutil.Discard, "", log.LstdFlags|log.Lshortfile)
-	//thislog = log.New(file, "", log.LstdFlags|log.Lshortfile)
+	//thislog := log.New(ioutil.Discard, "", log.LstdFlags|log.Lshortfile)
+	thislog := log.New(file, "", log.LstdFlags|log.Lshortfile)
 
 	Logger = NewLog(thislog)
 	Logger.Println("LogFile : " + logpath)

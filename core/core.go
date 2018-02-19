@@ -33,7 +33,7 @@ func (ssocket *SSocketWrapper) CopyFromC2Raw(raw net.Conn) (err error) {
 		utils.Logger.Print("read length from C failed!", err)
 		return err
 	}
-	utils.Logger.Println("read buffer size", buf)
+	utils.Logger.Println("read buffer size", len(buf))
 
 	size := utils.Byte2int(buf)
 	if size > BF_SIZE*BF_SIZE*100 || size == 0 {
@@ -86,7 +86,7 @@ func (ssocket *SSocketWrapper) CopyFromRaw2C(raw net.Conn) (err error) {
 	utils.Logger.Print("length of buf ", len(out))
 	start := utils.Int2byte((uint32)(len(out)))
 	ll := append(start, out...)
-	utils.Logger.Print("bowser content:(ALL): ", ll)
+	utils.Logger.Print("bowser content:(ALL): ", len(ll))
 
 	on, err := ssocket.src_socket.Write(ll)
 	if err != nil {
@@ -133,6 +133,7 @@ func read_bytes_from_socket(socket net.Conn, bytes int) ([]byte, error) {
 	var err error
 	for {
 		n, err := io.ReadFull(socket, buf[index:])
+		utils.Logger.Println("read from socket size: ", n, err)
 		index = index + n
 		if err != nil {
 			break
@@ -145,12 +146,11 @@ func read_bytes_from_socket(socket net.Conn, bytes int) ([]byte, error) {
 
 	}
 
-	utils.Logger.Println("buf: ", buf, "   buffer size: ", index, err)
-
 	if index < bytes && index != 0 {
 		utils.Logger.Println("can not run here!!!!!")
 		err = nil
 	}
 
+	utils.Logger.Println("read result size: ", index, err)
 	return buf, err
 }

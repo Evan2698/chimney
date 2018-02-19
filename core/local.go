@@ -53,7 +53,7 @@ func connect_server(remote net.Conn, config *AppConfig) (iv []byte, err error) {
 	outBuf[2+len(enCode)] = (byte)(len(hmac))
 	copy(outBuf[2+len(enCode)+1:], hmac)
 
-	utils.Logger.Print("send content  ", outBuf)
+	utils.Logger.Print("send content  ", len(outBuf))
 
 	n, err = remote.Write(outBuf)
 	if err != nil {
