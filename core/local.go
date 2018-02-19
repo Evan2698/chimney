@@ -185,17 +185,21 @@ func hand_local_routine(someone net.Conn, config *AppConfig) {
 
 	ssl := NewSSocket(remote, config.Password, iv)
 
-	//done := make(chan string)
-	//defer close(done)
+	input := make(chan string)
+	defer close(input)
 
-	go Copy_RAW2C(ssl, someone)
+	output := make(chan string)
+	defer close(output)
 
-	Copy_C2RAW(ssl, someone)
+	go Copy_RAW2C(ssl, someone, input)
+
+	Copy_C2RAW(ssl, someone, output)
 
 	elapsed := time.Since(t1)
 	utils.Logger.Print("takes time:---------------", elapsed)
 
-	//<-done
+	<-input
+	<-output
 }
 
 func Run_Local_routine(config *AppConfig) {

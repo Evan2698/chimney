@@ -97,7 +97,7 @@ func (ssocket *SSocketWrapper) CopyFromRaw2C(raw net.Conn) (err error) {
 	return nil
 }
 
-func Copy_C2RAW(ssl *SSocketWrapper, raw net.Conn) {
+func Copy_C2RAW(ssl *SSocketWrapper, raw net.Conn, ch chan string) {
 
 	for {
 		neterr := ssl.CopyFromC2Raw(raw)
@@ -106,10 +106,12 @@ func Copy_C2RAW(ssl *SSocketWrapper, raw net.Conn) {
 			break
 		}
 	}
+
+	ch <- "done"
 	StatPackage(0, 0)
 }
 
-func Copy_RAW2C(ssl *SSocketWrapper, raw net.Conn) {
+func Copy_RAW2C(ssl *SSocketWrapper, raw net.Conn, ch chan string) {
 
 	for {
 		neterr := ssl.CopyFromRaw2C(raw)
@@ -118,6 +120,8 @@ func Copy_RAW2C(ssl *SSocketWrapper, raw net.Conn) {
 			break
 		}
 	}
+
+	ch <- "done"
 
 	StatPackage(0, 0)
 }
@@ -141,7 +145,7 @@ func read_bytes_from_socket(socket net.Conn, bytes int) ([]byte, error) {
 
 	}
 
-	//utils.Logger.Println("buf: ", buf, "   buffer size: ", index)
+	utils.Logger.Println("buf: ", buf, "   buffer size: ", index, err)
 
 	if index < bytes && index != 0 {
 		utils.Logger.Println("can not run here!!!!!")
