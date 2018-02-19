@@ -75,7 +75,7 @@ func (ssocket *SSocketWrapper) CopyFromRaw2C(raw net.Conn) (err error) {
 		return err
 	}
 
-	utils.Logger.Print("bowser content: ", buf[0:n])
+	utils.Logger.Print("bowser content: ", n, err)
 
 	out, err := sercurity.CompressWithChaCha20(buf[0:n], ssocket.iv[:8], sercurity.MakeCompressKey(ssocket.cipher))
 	if err != nil {
