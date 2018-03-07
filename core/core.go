@@ -4,7 +4,6 @@ import (
 	"climbwall/sercurity"
 	"climbwall/utils"
 	"errors"
-	"io"
 	"net"
 )
 
@@ -150,7 +149,7 @@ func read_bytes_from_socket(socket net.Conn, bytes int) ([]byte, error) {
 	var err error
 	var n int
 	for {
-		n, err = io.ReadFull(socket, buf[index:])
+		n, err = socket.Read(buf[index:])
 		utils.Logger.Println("read from socket size: ", n, err)
 		index = index + n
 		if err != nil {
