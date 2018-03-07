@@ -85,10 +85,17 @@ func (ssocket *SSocketWrapper) CopyFromRaw2C(raw net.Conn) (err error) {
 
 	utils.Logger.Print("length of buf ", len(out))
 	start := utils.Int2byte((uint32)(len(out)))
-	ll := append(start, out...)
-	utils.Logger.Print("bowser content:(ALL): ", len(ll))
+	lenOfBuffer := len(start) + len(out)
+	if lenOfBuffer > BF_SIZE {
+		buf = make([]byte, lenOfBuffer)
+	}
 
-	on, err := ssocket.src_socket.Write(ll)
+	copy(buf[0:len(start)], start[0:len(start)])
+	copy(buf[len(start):lenOfBuffer], out[0:len(out)])
+
+	utils.Logger.Print("bowser content:(ALL): ", buf[0:lenOfBuffer])
+
+	on, err := ssocket.src_socket.Write(buf[0:lenOfBuffer])
 	if err != nil {
 		utils.Logger.Print("write content to SSocket failed! ", err, "write bytes: ", on, "bytes.")
 		return err
