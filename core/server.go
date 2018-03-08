@@ -182,14 +182,10 @@ func handleRoutine(someone net.Conn, config *AppConfig) {
 
 	ssl := NewSSocket(someone, config.Password, salt)
 
-	input := make(chan int)
-	defer close(input)
-
-	go Copy_C2RAW(ssl, remote, input)
+	go Copy_C2RAW(ssl, remote, nil)
 
 	Copy_RAW2C(ssl, remote, nil)
 
-	<-input
 	elapsed := time.Since(t1)
 	utils.Logger.Print("takes time:---------------", elapsed)
 }

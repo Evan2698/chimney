@@ -163,11 +163,9 @@ func hand_local_routine(someone net.Conn, config *AppConfig) {
 		return
 	}
 
-	host := net.JoinHostPort(config.Server, strconv.Itoa(config.ServerPort))
-
 	conSocket, err := Build_low_socket(config.Server, config.ServerPort)
 	if err != nil {
-		utils.Logger.Print("can not connect server", host)
+		utils.Logger.Print("can not connect server", err)
 		return
 	}
 
@@ -193,17 +191,13 @@ func hand_local_routine(someone net.Conn, config *AppConfig) {
 
 	ssl := NewSSocket(remote, config.Password, iv)
 
-	input := make(chan int)
-	defer close(input)
-
-	go Copy_RAW2C(ssl, someone, input)
+	go Copy_RAW2C(ssl, someone, nil)
 
 	Copy_C2RAW(ssl, someone, nil)
 
 	elapsed := time.Since(t1)
 	utils.Logger.Print("takes time:---------------", elapsed)
 
-	<-input
 }
 
 func Run_Local_routine(config *AppConfig) {
