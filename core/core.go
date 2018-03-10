@@ -144,6 +144,10 @@ func Copy_RAW2C(ssl *SSocketWrapper, raw net.Conn, ch chan int) {
 
 func read_bytes_from_socket(socket net.Conn, bytes int) ([]byte, error) {
 
+	if bytes <= 0 {
+		return nil, errors.New("0 bytes can not read! ")
+	}
+
 	buf := make([]byte, bytes)
 	index := 0
 	var err error
@@ -158,7 +162,6 @@ func read_bytes_from_socket(socket net.Conn, bytes int) ([]byte, error) {
 		}
 
 		if index >= bytes && index > 0 {
-			err = nil
 			utils.Logger.Println("read count for output ", index, err)
 			break
 		}
@@ -167,7 +170,6 @@ func read_bytes_from_socket(socket net.Conn, bytes int) ([]byte, error) {
 
 	if index < bytes && index != 0 {
 		utils.Logger.Println("can not run here!!!!!")
-		err = nil
 	}
 
 	utils.Logger.Println("read result size: ", index, err)
