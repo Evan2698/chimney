@@ -27,6 +27,6 @@ change folder to src, then
 
 And of course:
 
-MIT: http://rem.mit-license.org
+MIT: https://opensource.org/licenses/MIT
 
 
