@@ -23,3 +23,10 @@ change folder to src, then
 2. go build climbwall/cmd/local
 
 
+## License
+
+And of course:
+
+MIT: http://rem.mit-license.org
+
+
