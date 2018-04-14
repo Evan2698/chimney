@@ -6,7 +6,7 @@ Access network from china for everyone.
 
 # Version
 
-[current] 0.1
+[current] 0.2
 
 1. support AES-gcm and ChaCha20
 2. base socks5 protocol
