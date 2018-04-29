@@ -1,8 +1,8 @@
 package main
 
 import (
-	"climbwall/core"
-	"climbwall/utils"
+	"github.com/Evan2698/climbwall/core"
+	"github.com/Evan2698/climbwall/utils"
 	"flag"
 	"fmt"
 	"os"
