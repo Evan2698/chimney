@@ -6,7 +6,7 @@ Access network from china for everyone.
 
 # Version
 
-[current] 0.2
+[current] 0.3
 
 1. support AES-gcm and ChaCha20
 2. base socks5 protocol
@@ -19,8 +19,11 @@ Access network from china for everyone.
 # How to build
 change folder to src, then
 
-1. go build climbwall/cmd/server
-2. go build climbwall/cmd/local
+
+1. go get github.com/Evan2698/climbwall/cmd/local **or**  go get github.com/Evan2698/climbwall/cmd/server
+2. go build github.com/Evan2698/climbwall/cmd/local
+3. go build github.com/Evan2698/climbwall/cmd/server
+
 
 
 ## License
