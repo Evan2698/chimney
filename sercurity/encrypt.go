@@ -7,7 +7,7 @@ import (
 	"crypto/rand"
 	"crypto/cipher"
 	"crypto/aes"
-	"climbwall/utils"
+	"github.com/Evan2698/climbwall/utils"
 	"crypto/sha1"
 	"encoding/hex"
 	"strings"

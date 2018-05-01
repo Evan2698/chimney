@@ -1,8 +1,8 @@
 package core
 
 import (
-	"climbwall/sercurity"
-	"climbwall/utils"
+	"github.com/Evan2698/climbwall/sercurity"
+	"github.com/Evan2698/climbwall/utils"
 	"errors"
 	"net"
 	"os"

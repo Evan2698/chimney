@@ -2,8 +2,8 @@ package core
 
 import (
 	"bytes"
-	"climbwall/sercurity"
-	"climbwall/utils"
+	"github.com/Evan2698/climbwall/sercurity"
+	"github.com/Evan2698/climbwall/utils"
 	"crypto/hmac"
 	"encoding/binary"
 	"errors"

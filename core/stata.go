@@ -4,8 +4,8 @@ package core
 
 import (
 	"bytes"
-	"climbwall/utils"
-	"encoding/binary"
+	"github.com/Evan2698/climbwall/utils"
+	"github.com/Evan2698/encoding/binary"
 	"math/rand"
 	"net"
 	"time"

@@ -1,7 +1,7 @@
 package core
 
 import (
-	"climbwall/utils"
+	"github.com/Evan2698/climbwall/utils"
 	"encoding/json"
 	"io/ioutil"
 	"os"
