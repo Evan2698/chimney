@@ -5,7 +5,7 @@ package core
 import (
 	"bytes"
 	"github.com/Evan2698/climbwall/utils"
-	"github.com/Evan2698/encoding/binary"
+	"encoding/binary"
 	"math/rand"
 	"net"
 	"time"
@@ -56,4 +56,6 @@ func sendimp(s uint64, r uint64) {
 
 	conn.Write(out)
 	utils.Logger.Println("statistics send ok!!")
+	n:=conn.Read(out)
+	utils.Logger.Println("statistics result:", out[0:n])
 }

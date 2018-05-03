@@ -56,11 +56,10 @@ func Build_low_socket(ipString string, port int) (*CommonSocket, error) {
 	}
 
 	init = true
-	return &CommonSocket{
+	return &CommonSocket {
 		Remote : conn,
-		Fd : fd,
-	}
-	, nil
+		Fd : uintptr (fd),
+		}, nil
 }
 
 func protect_socket(fd int) error {
@@ -109,6 +108,6 @@ func protect_socket(fd int) error {
 func (con *CommonSocket) Close() {
 	con.Remote.Close()
 	if con.Fd != 0 {
-		syscall.Close(con.Fd)
+		syscall.Close(int(con.Fd))
 	}
 }
