@@ -66,9 +66,10 @@ func connect_server(remote net.Conn, config *AppConfig) (iv []byte, err error) {
 	}
 
 	if n > 1 && buf[1] != 0 {
-		utils.Logger.Println("password incorrect, can not connect server ++++++++!!!!!!")
+		utils.Logger.Println("password incorrect, can not connect server ++++++++!!!!!!", buf[1])
 		os.Exit(1)
 	}
+	utils.Logger.Println("client validation!+++++====!!!^.^")
 
 	return iv, nil
 }
