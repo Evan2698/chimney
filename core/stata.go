@@ -57,6 +57,6 @@ func sendimp(s uint64, r uint64) {
 	conn.Write(out)
 	utils.Logger.Println("statistics send ok!!")
 	out = make([]byte, 1)
-	n := conn.Read(out)
+	n,_ := conn.Read(out)
 	utils.Logger.Println("statistics result:", out[0:n])
 }
