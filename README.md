@@ -6,7 +6,7 @@ Access network from china for everyone.
 
 # Version
 
-[current] 0.3
+[current] 0.4
 
 1. support AES-gcm and ChaCha20
 2. base socks5 protocol
@@ -20,9 +20,9 @@ Access network from china for everyone.
 change folder to src, then
 
 
-1. go get github.com/Evan2698/climbwall/cmd/local **or**  go get github.com/Evan2698/climbwall/cmd/server
-2. go build github.com/Evan2698/climbwall/cmd/local
-3. go build github.com/Evan2698/climbwall/cmd/server
+1. go get github.com/Evan2698/chimney/cmd/local **or**  go get github.com/Evan2698/chimney/cmd/server
+2. go build github.com/Evan2698/chimney/cmd/local
+3. go build github.com/Evan2698/chimney/cmd/server
 
 
 
