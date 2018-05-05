@@ -2,8 +2,8 @@ package core
 
 import (
 	"bytes"
-	"github.com/Evan2698/climbwall/sercurity"
-	"github.com/Evan2698/climbwall/utils"
+	"github.com/Evan2698/chimney/sercurity"
+	"github.com/Evan2698/chimney/utils"
 	"crypto/hmac"
 	"encoding/binary"
 	"errors"

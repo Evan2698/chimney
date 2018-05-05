@@ -4,7 +4,7 @@ package core
 
 import (
 	"bytes"
-	"github.com/Evan2698/climbwall/utils"
+	"github.com/Evan2698/chimney/utils"
 	"encoding/binary"
 	"math/rand"
 	"net"

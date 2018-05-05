@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/Evan2698/climbwall/core"
-	"github.com/Evan2698/climbwall/utils"
+	"github.com/Evan2698/chimney/core"
+	"github.com/Evan2698/chimney/utils"
 	"flag"
 	"fmt"
 	"os"

@@ -6,8 +6,8 @@ import (
 	"os/signal"
 	"path/filepath"
 	"os"
-    "github.com/Evan2698/climbwall/utils"
-    "github.com/Evan2698/climbwall/core"
+    "github.com/Evan2698/chimney/utils"
+    "github.com/Evan2698/chimney/core"
 )
 
 

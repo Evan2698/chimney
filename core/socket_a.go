@@ -3,8 +3,8 @@
 package core
 
 import (
-	"github.com/Evan2698/climbwall/unixsocket"
-	"github.com/Evan2698/climbwall/utils"
+	"github.com/Evan2698/chimney/unixsocket"
+	"github.com/Evan2698/chimney/utils"
 	"errors"
 	"net"
 	"os"

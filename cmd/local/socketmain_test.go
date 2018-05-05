@@ -1,8 +1,8 @@
 package main
 
 import (
-	"climbwall/core"
-	"climbwall/utils"
+	"chimney/core"
+	"chimney/utils"
 )
 
 func main() {

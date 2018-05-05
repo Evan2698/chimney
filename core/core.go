@@ -1,8 +1,8 @@
 package core
 
 import (
-	"github.com/Evan2698/climbwall/sercurity"
-	"github.com/Evan2698/climbwall/utils"
+	"github.com/Evan2698/chimney/sercurity"
+	"github.com/Evan2698/chimney/utils"
 	"errors"
 	"net"
 )

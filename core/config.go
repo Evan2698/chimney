@@ -1,7 +1,7 @@
 package core
 
 import (
-	"github.com/Evan2698/climbwall/utils"
+	"github.com/Evan2698/chimney/utils"
 	"encoding/json"
 	"io/ioutil"
 	"os"
