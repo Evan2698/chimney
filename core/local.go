@@ -1,13 +1,14 @@
 package core
 
 import (
-	"github.com/Evan2698/chimney/sercurity"
-	"github.com/Evan2698/chimney/utils"
 	"errors"
 	"net"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/Evan2698/chimney/sercurity"
+	"github.com/Evan2698/chimney/utils"
 )
 
 func connect_server(remote net.Conn, config *AppConfig) (iv []byte, err error) {
@@ -15,14 +16,14 @@ func connect_server(remote net.Conn, config *AppConfig) (iv []byte, err error) {
 	n, err := remote.Write([]byte{0x05, 0x01})
 	if err != nil || n < 0 {
 		utils.Logger.Print("can not write 0x5 to server!")
-		return nil, errors.New("can not write socks 5 flag to server!")
+		return nil, errors.New("can not write socks 5 flag to server")
 	}
 
 	buf := make([]byte, 256)
 	n, err = remote.Read(buf)
 	if err != nil || buf[0] != 0x5 || buf[1] != 0x2 {
 		utils.Logger.Print("can not from server", err)
-		return nil, errors.New("no response for authen.")
+		return nil, errors.New("no response for authen")
 	}
 
 	//utils.Logger.Print("Server Buf  ", buf)
@@ -119,13 +120,13 @@ func handle_local_server(someone net.Conn, config *AppConfig, iv []byte, remote 
 	if err != nil || n < 0 {
 		someone.Write([]byte{0x05, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 		utils.Logger.Print("server connect response failed!!!", err)
-		return errors.New("server conect result failed!")
+		return errors.New("server conect result failed")
 	}
 
 	if buf[1] != 0x00 {
 		someone.Write([]byte{0x05, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 		utils.Logger.Print("can not support it!!!")
-		return errors.New("server connect failed, but response return back.")
+		return errors.New("server connect failed, but response return back")
 	}
 
 	b := make([]byte, 10)

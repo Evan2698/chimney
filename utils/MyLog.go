@@ -10,30 +10,42 @@ import (
 	"time"
 )
 
+// MyLog struct
+//
 type MyLog struct {
 	LogImp *log.Logger
 }
 
+// Print function
+//
 func (l *MyLog) Print(v ...interface{}) {
 	_, file, line, _ := runtime.Caller(1)
 	l.LogImp.Print(file, line, v)
 }
 
+// Printf function
+//
 func (l *MyLog) Printf(format string, v ...interface{}) {
 	_, file, line, _ := runtime.Caller(1)
 	l.LogImp.Print(file, line)
 	l.LogImp.Printf(format, v)
 }
 
+// Println function
+//
 func (l *MyLog) Println(v ...interface{}) {
 	_, file, line, _ := runtime.Caller(1)
 	l.LogImp.Println(file, line, v)
 }
 
 var (
+
+	// Logger MyLog
 	Logger *MyLog
 )
 
+// NewLog function
+//
 func NewLog(l *log.Logger) *MyLog {
 	return &MyLog{l}
 }
