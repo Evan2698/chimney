@@ -2,8 +2,6 @@ package core
 
 import (
 	"bytes"
-	"github.com/Evan2698/chimney/sercurity"
-	"github.com/Evan2698/chimney/utils"
 	"crypto/hmac"
 	"encoding/binary"
 	"errors"
@@ -13,6 +11,9 @@ import (
 	"strconv"
 	"syscall"
 	"time"
+
+	"github.com/Evan2698/chimney/sercurity"
+	"github.com/Evan2698/chimney/utils"
 )
 
 func handshark(someone net.Conn, config *AppConfig, salt []byte) error {
@@ -91,18 +92,20 @@ func handshark(someone net.Conn, config *AppConfig, salt []byte) error {
 
 }
 
-func handleConnect(someone net.Conn, config *AppConfig, salt []byte) (addr string, err error) {
+func handleConnect(someone net.Conn, config *AppConfig, salt []byte) (addr *ConnectInfo, err error) {
 
-	buf := make([]byte, 258)
+	R := &ConnectInfo{}
+	buf := make([]byte, 300)
 	n, err := someone.Read(buf)
 	if err != nil || n < 0 || buf[0] != 0x05 {
 		utils.Logger.Print("can not read remote address from client", err)
-		return "", err
+		return nil, err
 	}
 
-	if buf[1] != 0x1 {
+	R.cmd = int(buf[1])
+	if R.cmd != CMD_CONNECT && R.cmd != CMD_UDPASSOCIATE {
 		utils.Logger.Print("does not support other method except connect")
-		return "", errors.New("does not support other method except connect")
+		return nil, errors.New("does not support other method except connect")
 	}
 
 	utils.Logger.Println("accesss address ", len(buf), err)
@@ -110,13 +113,17 @@ func handleConnect(someone net.Conn, config *AppConfig, salt []byte) (addr strin
 	cLen = (int)(buf[4])
 	content, err := sercurity.Uncompress(buf[5:5+cLen], salt, sercurity.MakeCompressKey(config.Password))
 	if err != nil {
-		return "", errors.New("does not parse the address from CC")
+		return nil, errors.New("does not parse the address from CC")
 	}
+
+	R.addr = make([]byte, len(content))
+	copy(R.addr, content)
+	R.addresstype = buf[3] & 0xf
 
 	utils.Logger.Println("domain content: ", len(content))
 
 	var dIP string
-	switch buf[3] & 0xf {
+	switch R.addresstype {
 	case 0x01:
 		//	IP V4 address: X'01'
 		dIP = net.IP(content).String()
@@ -127,15 +134,51 @@ func handleConnect(someone net.Conn, config *AppConfig, salt []byte) (addr strin
 		//	IP V6 address: X'04'
 		dIP = net.IP(content).String()
 	default:
-		return "", errors.New("on default, the address is nil!")
+		return nil, errors.New("on default, the address is nil")
 	}
 
-	port := binary.BigEndian.Uint16(buf[n-2 : n])
-	host := net.JoinHostPort(dIP, strconv.Itoa(int(port)))
+	R.port = binary.BigEndian.Uint16(buf[n-2 : n])
 
-	utils.Logger.Println("host ", host)
+	R.host = net.JoinHostPort(dIP, strconv.Itoa(int(R.port)))
 
-	return host, nil
+	utils.Logger.Println("host ", R.host)
+
+	return R, nil
+}
+
+func createTCPConnect(host string) (net.Conn, error) {
+
+	remote, err := net.Dial("tcp", host)
+	if err != nil {
+		if ne, ok := err.(*net.OpError); ok && (ne.Err == syscall.EMFILE || ne.Err == syscall.ENFILE) {
+			// log too many open file error
+			// EMFILE is process reaches open file limits, ENFILE is system limit
+			utils.Logger.Print("dial error: ", err)
+		} else {
+			utils.Logger.Print("error connecting to:  ", host, err)
+		}
+		return nil, err
+	}
+
+	return remote, nil
+}
+
+func createDUPConnect(host string) (net.Conn, error) {
+	udpAddr, err := net.ResolveUDPAddr("udp", host)
+	if err != nil {
+		utils.Logger.Print("ResolveUDPAddr failed:  ", host, err)
+
+		return nil, err
+	}
+
+	remote, err := net.ListenUDP("udp", udpAddr)
+	if err != nil {
+		utils.Logger.Print("establish UDP Failed:  ", host, err)
+
+		return nil, err
+	}
+
+	return remote, nil
 }
 
 func handleRoutine(someone net.Conn, config *AppConfig) {
@@ -152,25 +195,24 @@ func handleRoutine(someone net.Conn, config *AppConfig) {
 		return
 	}
 
-	addr, err := handleConnect(someone, config, salt)
-	if addr == "" || err != nil || len(addr) == 0 {
+	info, err := handleConnect(someone, config, salt)
+	if info == nil || err != nil || len(info.host) == 0 {
 		utils.Logger.Print("parse failed", err)
 		someone.Write([]byte{0x05, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 		return
 	}
 
-	utils.Logger.Print("address:   |", addr+"|")
-	remote, err := net.Dial("tcp", addr)
-	if err != nil {
-		if ne, ok := err.(*net.OpError); ok && (ne.Err == syscall.EMFILE || ne.Err == syscall.ENFILE) {
-			// log too many open file error
-			// EMFILE is process reaches open file limits, ENFILE is system limit
-			utils.Logger.Print("dial error: ", err)
-		} else {
-			utils.Logger.Print("error connecting to:  ", addr, err)
-		}
+	utils.Logger.Print("address:   |", info.host+"|")
 
+	var remote net.Conn = nil
+	if CMD_CONNECT == info.cmd {
+		remote, err = createTCPConnect(info.host)
+	} else if CMD_UDPASSOCIATE == info.cmd {
+		remote, err = createDUPConnect(info.host)
+	}
+	if err != nil {
 		someone.Write([]byte{0x05, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
+		utils.Logger.Print("create connection failed!!!")
 		return
 	}
 
@@ -180,11 +222,19 @@ func handleRoutine(someone net.Conn, config *AppConfig) {
 
 	someone.Write([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 
-	ssl := NewSSocket(someone, config.Password, salt)
+	if info.cmd == CMD_CONNECT {
+		ssl := NewSSocket(someone, config.Password, salt)
 
-	go Copy_C2RAW(ssl, remote, nil)
+		go Copy_C2RAW(ssl, remote, nil)
 
-	Copy_RAW2C(ssl, remote, nil)
+		Copy_RAW2C(ssl, remote, nil)
+
+	} else if CMD_UDPASSOCIATE == info.cmd {
+		//TODO
+		ch := make(chan string)
+		ss := NewUDPSocket(someone, config.Password, salt, info, ch)
+		udpserverRoutine(ss, remote)
+	}
 
 	elapsed := time.Since(t1)
 	utils.Logger.Print("takes time:---------------", elapsed)

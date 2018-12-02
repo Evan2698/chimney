@@ -1,6 +1,7 @@
 package core
 
 import (
+	"encoding/binary"
 	"errors"
 	"net"
 	"os"
@@ -75,21 +76,44 @@ func connect_server(remote net.Conn, config *AppConfig) (iv []byte, err error) {
 	return iv, nil
 }
 
-func handle_local_server(someone net.Conn, config *AppConfig, iv []byte, remote net.Conn) error {
+func handle_local_server(someone net.Conn, config *AppConfig, iv []byte, remote net.Conn) (*ConnectInfo, error) {
+
+	info := &ConnectInfo{
+		cmd: CMD_CONNECT,
+	}
+
 	buf := make([]byte, 300)
 	n, err := someone.Read(buf)
 	if err != nil || n < 0 {
 		utils.Logger.Print("read from server failed!", err)
-		return err
+		return info, err
 	}
 
-	if n > 1 && buf[1] != 0x1 {
+	if n < 2 {
+		utils.Logger.Print("methed request error!!!")
+		return info, errors.New("methed request error")
+	}
+
+	info.cmd = (int)(buf[1])
+
+	if info.cmd != CMD_CONNECT && info.cmd != CMD_UDPASSOCIATE {
 		utils.Logger.Print("can not support it")
-		return errors.New("the method server can not support!!!")
+		return info, errors.New("the method server can not support")
 	}
 
-	len_content := n - 2 - 4
-	content := buf[4 : 4+len_content]
+	if info.cmd == CMD_UDPASSOCIATE {
+		if checkUDPTerminates(buf[4:]) {
+			return info, errors.New("user terminates the UDP")
+		}
+	}
+
+	addressLen := n - 2 - 4
+	content := buf[4 : 4+addressLen]
+
+	info.addr = make([]byte, addressLen)
+	copy(info.addr, content)
+	info.port = binary.BigEndian.Uint16(buf[n-2 : n])
+	info.addresstype = buf[3]
 
 	//utils.Logger.Print("domain|", content, "|")
 	//utils.Logger.Print("origin", buf)
@@ -98,7 +122,7 @@ func handle_local_server(someone net.Conn, config *AppConfig, iv []byte, remote 
 	if err != nil {
 		someone.Write([]byte{0x05, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 		utils.Logger.Print("encrypt the content failed!!!", err)
-		return errors.New("encrypt the content failed!!!")
+		return info, errors.New("encrypt the content failed")
 	}
 
 	out := make([]byte, len(encode)+2+4+1)
@@ -113,32 +137,46 @@ func handle_local_server(someone net.Conn, config *AppConfig, iv []byte, remote 
 	if err != nil {
 		someone.Write([]byte{0x05, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 		utils.Logger.Print("write domain failed!!!", err)
-		return errors.New("write domain failed")
+		return info, errors.New("write domain failed")
 	}
 
 	n, err = remote.Read(buf)
 	if err != nil || n < 0 {
 		someone.Write([]byte{0x05, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 		utils.Logger.Print("server connect response failed!!!", err)
-		return errors.New("server conect result failed")
+		return info, errors.New("server conect result failed")
 	}
 
 	if buf[1] != 0x00 {
 		someone.Write([]byte{0x05, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 		utils.Logger.Print("can not support it!!!")
-		return errors.New("server connect failed, but response return back")
+		return info, errors.New("server connect failed, but response return back")
 	}
 
-	b := make([]byte, 10)
-	copy(b[0:8], []byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00})
-	b[8] = byte(config.LocalPort & 0xff)
-	b[9] = byte((config.LocalPort >> 8) & 0xff)
-	n, err = someone.Write(b)
-	if err != nil || n < 0 {
-		utils.Logger.Print("write to client response failed", err)
-		return errors.New("write to client response failed")
+	if info.cmd != CMD_UDPASSOCIATE {
+		// TCP CONECTION
+		b := make([]byte, 10)
+		copy(b[0:8], []byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00})
+		b[8] = byte(config.LocalPort & 0xff)
+		b[9] = byte((config.LocalPort >> 8) & 0xff)
+		n, err = someone.Write(b)
+		if err != nil || n < 0 {
+			utils.Logger.Print("write to client response failed", err)
+			return info, errors.New("write to client response failed")
+		}
+	} else {
+		// UDP associate SUCCESS
+		full := append([]byte{0x05, 0x00, 0x00}, info.addresstype)
+		full = append(full, info.addr...)
+		ports := utils.Port2Bytes(info.port)
+		full = append(full, ports...)
+		n, err = someone.Write(full)
+		if err != nil || n < 0 {
+			utils.Logger.Print("udp packet response failed", err)
+			return info, errors.New("write to client response failed")
+		}
 	}
-	return nil
+	return info, nil
 }
 
 func hand_local_routine(someone net.Conn, config *AppConfig) {
@@ -185,17 +223,25 @@ func hand_local_routine(someone net.Conn, config *AppConfig) {
 		return
 	}
 
-	err = handle_local_server(someone, config, iv, remote)
+	info, err := handle_local_server(someone, config, iv, remote)
 	if err != nil {
 		utils.Logger.Print("can not handle brower and server!!", err)
 		return
 	}
 
-	ssl := NewSSocket(remote, config.Password, iv)
+	if info.cmd == CMD_CONNECT {
 
-	go Copy_RAW2C(ssl, someone, nil)
+		ssl := NewSSocket(remote, config.Password, iv)
 
-	Copy_C2RAW(ssl, someone, nil)
+		go Copy_RAW2C(ssl, someone, nil)
+
+		Copy_C2RAW(ssl, someone, nil)
+	} else if info.cmd == CMD_UDPASSOCIATE {
+		ch := make(chan string)
+		udpsocket := NewUDPSocket(remote, config.Password, iv, info, ch)
+		err := udpsend(udpsocket, someone)
+		utils.Logger.Print("udp error: ", err)
+	}
 
 	elapsed := time.Since(t1)
 	utils.Logger.Print("takes time:---------------", elapsed)

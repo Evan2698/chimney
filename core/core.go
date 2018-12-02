@@ -1,20 +1,31 @@
 package core
 
 import (
-	"github.com/Evan2698/chimney/sercurity"
-	"github.com/Evan2698/chimney/utils"
 	"errors"
 	"net"
+
+	"github.com/Evan2698/chimney/sercurity"
+	"github.com/Evan2698/chimney/utils"
 )
 
 const (
-	BF_SIZE = 5120
+	BF_SIZE          = 5120
+	CMD_CONNECT      = 0x1
+	CMD_UDPASSOCIATE = 0x3
 )
 
 type SSocketWrapper struct {
 	src_socket net.Conn
 	cipher     string
 	iv         []byte
+}
+
+type ConnectInfo struct {
+	cmd         int    // socks command
+	addr        []byte // address
+	port        uint16 // port
+	addresstype byte   // type
+	host        string // full address
 }
 
 func NewSSocket(ss net.Conn, c string, i []byte) *SSocketWrapper {

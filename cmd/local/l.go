@@ -1,8 +1,6 @@
 package main
 
 import (
-	"github.com/Evan2698/chimney/core"
-	"github.com/Evan2698/chimney/utils"
 	"flag"
 	"fmt"
 	"os"
@@ -10,6 +8,9 @@ import (
 	"path/filepath"
 	"runtime"
 	"syscall"
+
+	"github.com/Evan2698/chimney/core"
+	"github.com/Evan2698/chimney/utils"
 )
 
 func runlocal(config *core.AppConfig) {
@@ -36,7 +37,7 @@ func main() {
 
 	var configpath string
 	cpu := runtime.NumCPU()
-	runtime.GOMAXPROCS(cpu)
+	runtime.GOMAXPROCS(cpu * 4)
 	utils.Logger.Print("local log.....")
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {

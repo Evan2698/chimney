@@ -1,29 +1,28 @@
 package main
 
 import (
-	"runtime"
-	"syscall"
+	"os"
 	"os/signal"
 	"path/filepath"
-	"os"
-    "github.com/Evan2698/chimney/utils"
-    "github.com/Evan2698/chimney/core"
+	"runtime"
+	"syscall"
+
+	"github.com/Evan2698/chimney/core"
+	"github.com/Evan2698/chimney/utils"
 )
 
-
-func run_server (config * core.AppConfig) {
+func run_server(config *core.AppConfig) {
 	core.Run_server_routine(config)
 }
 
-
-func wait_s(){
+func wait_s() {
 	var system_signal = make(chan os.Signal, 2)
 	signal.Notify(system_signal, syscall.SIGINT, syscall.SIGHUP)
 	for sig := range system_signal {
-		if sig == syscall.SIGHUP || sig == syscall.SIGINT{
+		if sig == syscall.SIGHUP || sig == syscall.SIGINT {
 			utils.Logger.Printf("caught signal %v, exit", sig)
 			os.Exit(0)
-			
+
 		} else {
 
 			utils.Logger.Printf("XXX caught signal %v, exit", sig)
@@ -32,18 +31,17 @@ func wait_s(){
 	}
 }
 
-
-func main(){
+func main() {
 
 	cpu := runtime.NumCPU()
-	runtime.GOMAXPROCS(cpu)
+	runtime.GOMAXPROCS(cpu * 4)
 	utils.Logger.Print("server log...")
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
 		utils.Logger.Print("can not combin config file path!")
 		os.Exit(1)
 	}
-   
+
 	config, err := core.Parse(dir + "/config.json")
 	if err != nil {
 		utils.Logger.Print("load config file failed!")
@@ -55,6 +53,3 @@ func main(){
 
 	wait_s()
 }
-
-
-
