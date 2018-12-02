@@ -82,7 +82,7 @@ func handle_local_server(someone net.Conn, config *AppConfig, iv []byte, remote 
 		cmd: CMD_CONNECT,
 	}
 
-	buf := make([]byte, 300)
+	buf := make([]byte, 264)
 	n, err := someone.Read(buf)
 	if err != nil || n < 0 {
 		utils.Logger.Print("read from server failed!", err)
@@ -99,12 +99,6 @@ func handle_local_server(someone net.Conn, config *AppConfig, iv []byte, remote 
 	if info.cmd != CMD_CONNECT && info.cmd != CMD_UDPASSOCIATE {
 		utils.Logger.Print("can not support it")
 		return info, errors.New("the method server can not support")
-	}
-
-	if info.cmd == CMD_UDPASSOCIATE {
-		if checkUDPTerminates(buf[4:]) {
-			return info, errors.New("user terminates the UDP")
-		}
 	}
 
 	addressLen := n - 2 - 4
@@ -190,7 +184,7 @@ func hand_local_routine(someone net.Conn, config *AppConfig) {
 	t1 := time.Now()
 	utils.SetReadTimeOut(someone, config.Timeout)
 
-	buf := make([]byte, 530)
+	buf := make([]byte, 256)
 	n, err := someone.Read(buf)
 	if err != nil || 0 >= n || 0x5 != buf[0] {
 		utils.Logger.Print("read error form", err, "read bytes:", n)

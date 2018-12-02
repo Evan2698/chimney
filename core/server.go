@@ -18,7 +18,7 @@ import (
 
 func handshark(someone net.Conn, config *AppConfig, salt []byte) error {
 
-	buf := make([]byte, 530)
+	buf := make([]byte, 540)
 	n, err := someone.Read(buf)
 	if err != nil || 0 >= n {
 		utils.Logger.Print("read error form", err, "read bytes:", n)
@@ -92,6 +92,30 @@ func handshark(someone net.Conn, config *AppConfig, salt []byte) error {
 
 }
 
+func parsehost(t byte, content []byte) string {
+	var dIP string
+	it := content[:len(content)-2]
+	switch t {
+	case 0x01:
+		//	IP V4 address: X'01'
+		dIP = net.IP(it).String()
+	case 0x03:
+		//	DOMAINNAME: X'03'
+		dIP = string(it[1:])
+	case 0x04:
+		//	IP V6 address: X'04'
+		dIP = net.IP(it).String()
+	default:
+		dIP = "127.0.0.1"
+	}
+
+	port := binary.BigEndian.Uint16(content[len(content)-2:])
+
+	host := net.JoinHostPort(dIP, strconv.Itoa(int(port)))
+
+	return host
+}
+
 func handleConnect(someone net.Conn, config *AppConfig, salt []byte) (addr *ConnectInfo, err error) {
 
 	R := &ConnectInfo{}
@@ -122,24 +146,9 @@ func handleConnect(someone net.Conn, config *AppConfig, salt []byte) (addr *Conn
 
 	utils.Logger.Println("domain content: ", len(content))
 
-	var dIP string
-	switch R.addresstype {
-	case 0x01:
-		//	IP V4 address: X'01'
-		dIP = net.IP(content).String()
-	case 0x03:
-		//	DOMAINNAME: X'03'
-		dIP = string(content[1:])
-	case 0x04:
-		//	IP V6 address: X'04'
-		dIP = net.IP(content).String()
-	default:
-		return nil, errors.New("on default, the address is nil")
-	}
+	R.host = parsehost(buf[3], append(content, buf[n-2:n]...))
 
 	R.port = binary.BigEndian.Uint16(buf[n-2 : n])
-
-	R.host = net.JoinHostPort(dIP, strconv.Itoa(int(R.port)))
 
 	utils.Logger.Println("host ", R.host)
 
@@ -181,6 +190,11 @@ func createDUPConnect(host string) (net.Conn, error) {
 	return remote, nil
 }
 
+func createFakeDUPConnect(host string) (net.Conn, error) {
+
+	return nil, nil
+}
+
 func handleRoutine(someone net.Conn, config *AppConfig) {
 
 	t1 := time.Now()
@@ -204,11 +218,11 @@ func handleRoutine(someone net.Conn, config *AppConfig) {
 
 	utils.Logger.Print("address:   |", info.host+"|")
 
-	var remote net.Conn = nil
+	var remote net.Conn
 	if CMD_CONNECT == info.cmd {
 		remote, err = createTCPConnect(info.host)
 	} else if CMD_UDPASSOCIATE == info.cmd {
-		remote, err = createDUPConnect(info.host)
+		remote, err = createFakeDUPConnect(info.host)
 	}
 	if err != nil {
 		someone.Write([]byte{0x05, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
@@ -216,7 +230,11 @@ func handleRoutine(someone net.Conn, config *AppConfig) {
 		return
 	}
 
-	defer remote.Close()
+	defer func() {
+		if remote != nil {
+			remote.Close()
+		}
+	}()
 
 	utils.SetReadTimeOut(remote, config.Timeout)
 

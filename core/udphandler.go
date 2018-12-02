@@ -70,8 +70,8 @@ func (ssocket *UDPSocket) DUDP2RAW(raw net.Conn) error {
 		ssocket.done <- "done"
 		return errors.New("read packet failed")
 	}
-
-	if checkUDPTerminates(ori[:len(ssocket.info.addr)+2]) {
+	addressLen := caladdress(header[3], ori[0])
+	if checkUDPTerminates(ori[:addressLen]) {
 		ssocket.done <- "done"
 		return errors.New("done")
 	}
@@ -90,6 +90,26 @@ func (ssocket *UDPSocket) DUDP2RAW(raw net.Conn) error {
 
 }
 
+func caladdress(c, b byte) int {
+
+	var length int
+	if c == 0x1 {
+		length = 4
+	}
+
+	if c == 0x4 {
+		length = 16
+	}
+
+	if c == 0x3 {
+		length = (int)(b) + 1 // 1 is c[4]
+	}
+
+	length = length + 2
+
+	return length
+}
+
 // Raw2UDP .. just client use it
 func (ssocket *UDPSocket) Raw2UDP(raw net.Conn) error {
 
@@ -102,13 +122,13 @@ func (ssocket *UDPSocket) Raw2UDP(raw net.Conn) error {
 	}
 
 	utils.Logger.Print("bowser udp: ", n, err)
-	if n < 4+len(ssocket.info.addr)+2 {
+	if n < 4+2 {
 		utils.Logger.Print("UDP format incorrect from raw socket!!!")
 		ssocket.done <- "done"
 		return errors.New("UDP format incorectly")
 	}
 
-	if checkUDPTerminates(buf[4 : 4+len(ssocket.info.addr)+2]) {
+	if checkUDPTerminates(buf[4 : 4+caladdress(buf[3], buf[4])]) {
 		ssocket.done <- "done"
 		return errors.New("client done")
 	}
@@ -181,33 +201,47 @@ func checkUDPTerminates(buf []byte) bool {
 	return zero
 }
 
-func (ssocket *UDPSocket) readUDPD(raw net.Conn) ([]byte, error) {
+func (ssocket *UDPSocket) readUDPD() ([]byte, net.Conn, error) {
 
 	header, ori, err := sos(ssocket)
 	if err != nil {
 		ssocket.done <- "done"
-		return nil, errors.New("read packet failed")
+		return nil, nil, errors.New("read packet failed")
 	}
-
-	if checkUDPTerminates(ori[:len(ssocket.info.addr)+2]) {
+	addrLen := caladdress(header[3], ori[0])
+	if checkUDPTerminates(ori[:addrLen]) {
 		ssocket.done <- "done"
-		return nil, errors.New("done")
+		return nil, nil, errors.New("done")
 	}
 
 	// must write raw data without header.
-	n, err := raw.Write(ori[len(ssocket.info.addr)+2:])
+	host := parsehost(header[3], ori[:addrLen])
+	udpConnect, err := createDUPConnect(host)
+	if err != nil {
+		ssocket.done <- "done"
+		return nil, nil, errors.New("address invalid for UDP")
+	}
+
+	n, err := udpConnect.Write(ori[addrLen:])
 	if err != nil {
 		ssocket.done <- "done"
 		utils.Logger.Print("write UDP failed!", err)
-		return nil, err
+		udpConnect.Close()
+		return nil, nil, err
 	}
 
 	utils.Logger.Print("write to destination UDP", n, " bytes.")
 
-	return header, nil
+	return append(header, ori[:addrLen]...), udpConnect, nil
 }
 
 func (ssocket *UDPSocket) rawToUPD(raw net.Conn, header []byte) error {
+
+	defer func() {
+		if raw != nil {
+			raw.Close()
+		}
+	}()
 
 	buf := make([]byte, BF_SIZE)
 	n, err := raw.Read(buf)
@@ -218,9 +252,7 @@ func (ssocket *UDPSocket) rawToUPD(raw net.Conn, header []byte) error {
 	}
 
 	// encapsulate the data with header and compress
-	ports := utils.Port2Bytes(ssocket.info.port)
-	lop := append(ssocket.info.addr, ports...)
-	lop = append(lop, buf[:n]...)
+	lop := append(header[4:], buf[:n]...)
 	ori, err := sercurity.CompressWithChaCha20(lop, ssocket.iv[:8], sercurity.MakeCompressKey(ssocket.cipher))
 	if err != nil {
 		ssocket.done <- "done"
@@ -228,7 +260,7 @@ func (ssocket *UDPSocket) rawToUPD(raw net.Conn, header []byte) error {
 		return err
 	}
 
-	full := append(header, ori...)
+	full := append(header[:4], ori...)
 	ll := len(full)
 	out := append(utils.Int2byte((uint32)(ll)), full...)
 	n, err = ssocket.srcsocket.Write(out)
@@ -239,15 +271,14 @@ func (ssocket *UDPSocket) rawToUPD(raw net.Conn, header []byte) error {
 	utils.Logger.Print("write ", n, "bytes.", err)
 
 	return err
-
 }
 
-func udpserverRoutine(ss *UDPSocket, raw net.Conn) error {
+func udpserverRoutine(ss *UDPSocket, h net.Conn) error {
 
 	go func() {
 
 		for {
-			header, err := ss.readUDPD(raw)
+			header, raw, err := ss.readUDPD()
 			if err != nil {
 				break
 			}
