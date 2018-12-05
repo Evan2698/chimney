@@ -125,6 +125,7 @@ func handleConnect(someone net.Conn, config *AppConfig, salt []byte) (addr *Conn
 		utils.Logger.Print("can not read remote address from client", err)
 		return nil, err
 	}
+	utils.Logger.Println("the LOCAL DATA:", buf[:n])
 
 	R.cmd = int(buf[1])
 	if R.cmd != CMD_CONNECT && R.cmd != CMD_UDPASSOCIATE {
@@ -142,13 +143,15 @@ func handleConnect(someone net.Conn, config *AppConfig, salt []byte) (addr *Conn
 
 	R.addr = make([]byte, len(content))
 	copy(R.addr, content)
-	R.addresstype = buf[3] & 0xf
+	R.atype = buf[3] & 0xf
 
 	utils.Logger.Println("domain content: ", len(content))
 
 	R.host = parsehost(buf[3], append(content, buf[n-2:n]...))
 
-	R.port = binary.BigEndian.Uint16(buf[n-2 : n])
+	utils.Logger.Println("host full: ", R.host)
+
+	R.udpport = binary.BigEndian.Uint16(buf[n-2 : n])
 
 	utils.Logger.Println("host ", R.host)
 
@@ -173,19 +176,15 @@ func createTCPConnect(host string) (net.Conn, error) {
 }
 
 func createDUPConnect(host string) (net.Conn, error) {
-	udpAddr, err := net.ResolveUDPAddr("udp", host)
-	if err != nil {
-		utils.Logger.Print("ResolveUDPAddr failed:  ", host, err)
 
-		return nil, err
-	}
-
-	remote, err := net.ListenUDP("udp", udpAddr)
+	remote, err := net.Dial("udp", "8.8.8.8:53")
 	if err != nil {
 		utils.Logger.Print("establish UDP Failed:  ", host, err)
 
 		return nil, err
 	}
+
+	utils.Logger.Print("dial udp host: |", host, "|", err)
 
 	return remote, nil
 }
@@ -250,7 +249,7 @@ func handleRoutine(someone net.Conn, config *AppConfig) {
 	} else if CMD_UDPASSOCIATE == info.cmd {
 		//TODO
 		ch := make(chan string)
-		ss := NewUDPSocket(someone, config.Password, salt, info, ch)
+		ss := NewUDPSocket(someone, config, salt, info, ch)
 		udpserverRoutine(ss, remote)
 	}
 

@@ -21,11 +21,12 @@ type SSocketWrapper struct {
 }
 
 type ConnectInfo struct {
-	cmd         int    // socks command
-	addr        []byte // address
-	port        uint16 // port
-	addresstype byte   // type
-	host        string // full address
+	cmd        int          // socks command
+	addr       []byte       // address
+	host       string       // full address
+	udpport    uint16       // udp port
+	atype      byte         // address type
+	udpConnect *net.UDPConn // udp conect
 }
 
 func NewSSocket(ss net.Conn, c string, i []byte) *SSocketWrapper {
@@ -34,6 +35,16 @@ func NewSSocket(ss net.Conn, c string, i []byte) *SSocketWrapper {
 		cipher:     c,
 		iv:         i,
 	}
+}
+
+func IsIP4(ip net.IP) byte {
+
+	if len(ip) == net.IPv4len {
+		return 1
+	} else if len(ip) == net.IPv6len {
+		return 4
+	}
+	return 0
 }
 
 func (ssocket *SSocketWrapper) CopyFromC2Raw(raw net.Conn) (err error) {

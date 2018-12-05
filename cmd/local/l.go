@@ -38,6 +38,7 @@ func main() {
 	var configpath string
 	cpu := runtime.NumCPU()
 	runtime.GOMAXPROCS(cpu * 4)
+	core.InitializePort()
 	utils.Logger.Print("local log.....")
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {

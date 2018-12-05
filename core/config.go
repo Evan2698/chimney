@@ -1,18 +1,20 @@
 package core
 
 import (
-	"github.com/Evan2698/chimney/utils"
 	"encoding/json"
 	"io/ioutil"
 	"os"
+
+	"github.com/Evan2698/chimney/utils"
 )
 
 type AppConfig struct {
-	ServerPort int    `json:"server_port"`
-	LocalPort  int    `json:"local_port"`
-	Password   string `json:"password"`
-	Timeout    int    `json:"timeout"`
-	Server     string `json:"server"`
+	ServerPort   int    `json:"server_port"`
+	LocalPort    int    `json:"local_port"`
+	LocalAddress string `json:"local_address"`
+	Password     string `json:"password"`
+	Timeout      int    `json:"timeout"`
+	Server       string `json:"server"`
 }
 
 func Parse(path string) (config *AppConfig, err error) {

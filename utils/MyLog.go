@@ -3,8 +3,9 @@
 package utils
 
 import (
-	"io/ioutil"
+	"fmt"
 	"log"
+	"os"
 	"runtime"
 	"strconv"
 	"time"
@@ -55,15 +56,15 @@ func init() {
 	t := time.Now()
 	timestamp := strconv.FormatInt(t.UTC().UnixNano(), 10)
 	var logpath = "log_" + timestamp + ".txt"
-	/*var file, err1 = os.Create(logpath)
+	var file, err1 = os.Create(logpath)
 	if err1 != nil {
 		fmt.Print("can not create log file")
 		panic(err1)
-	}*/
+	}
 
-	thislog := log.New(ioutil.Discard, "", log.LstdFlags|log.Lshortfile)
+	//thislog := log.New(ioutil.Discard, "", log.LstdFlags|log.Lshortfile)
 
-	//thislog := log.New(file, "", log.LstdFlags|log.Lshortfile)
+	thislog := log.New(file, "", log.LstdFlags|log.Lshortfile)
 	Logger = NewLog(thislog)
 	Logger.Println("LogFile : " + logpath)
 }

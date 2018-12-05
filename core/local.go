@@ -1,7 +1,6 @@
 package core
 
 import (
-	"encoding/binary"
 	"errors"
 	"net"
 	"os"
@@ -89,6 +88,8 @@ func handle_local_server(someone net.Conn, config *AppConfig, iv []byte, remote 
 		return info, err
 	}
 
+	utils.Logger.Print("CLIENT:   ", buf[:n])
+
 	if n < 2 {
 		utils.Logger.Print("methed request error!!!")
 		return info, errors.New("methed request error")
@@ -104,13 +105,7 @@ func handle_local_server(someone net.Conn, config *AppConfig, iv []byte, remote 
 	addressLen := n - 2 - 4
 	content := buf[4 : 4+addressLen]
 
-	info.addr = make([]byte, addressLen)
-	copy(info.addr, content)
-	info.port = binary.BigEndian.Uint16(buf[n-2 : n])
-	info.addresstype = buf[3]
-
-	//utils.Logger.Print("domain|", content, "|")
-	//utils.Logger.Print("origin", buf)
+	utils.Logger.Print("domain|", content, "|")
 
 	encode, err := sercurity.Compress(content, iv, sercurity.MakeCompressKey(config.Password))
 	if err != nil {
@@ -125,7 +120,7 @@ func handle_local_server(someone net.Conn, config *AppConfig, iv []byte, remote 
 	copy(out[5:5+len(encode)], encode)
 	copy(out[5+len(encode):], buf[n-2:])
 
-	//utils.Logger.Print("new____+++", out)
+	utils.Logger.Print("new____+++", out)
 
 	n, err = remote.Write(out)
 	if err != nil {
@@ -160,14 +155,36 @@ func handle_local_server(someone net.Conn, config *AppConfig, iv []byte, remote 
 		}
 	} else {
 		// UDP associate SUCCESS
-		full := append([]byte{0x05, 0x00, 0x00}, info.addresstype)
-		full = append(full, info.addr...)
-		ports := utils.Port2Bytes(info.port)
+		if GPortQueue.IsEmpty() {
+			someone.Write([]byte{0x05, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
+			utils.Logger.Print("can not get port for this UDP server!!!")
+			return nil, errors.New("can not get port for this UDP server")
+		}
+
+		udpPort := (uint16)(GPortQueue.Dequeue())
+		info.udpport = udpPort
+
+		ip := net.ParseIP(config.LocalAddress).To4()
+		info.udpConnect, err = createUDPListen(ip.String(), info.udpport)
+		if err != nil {
+			utils.Logger.Print("create UDP listen failed ", ip.String(), ":", info.udpport)
+			return nil, errors.New("create UDP listen failed " + ip.String() + ":" + strconv.Itoa((int)(info.udpport)))
+		}
+
+		info.addr = make([]byte, len(ip))
+		copy(info.addr, ip)
+		info.atype = IsIP4(ip)
+		full := append([]byte{0x05, 0x00, 0x00}, info.atype)
+		full = append(full, ip...)
+		ports := utils.Port2Bytes(udpPort)
 		full = append(full, ports...)
+		utils.Logger.Print("response the CLIENT UDP SUCCESS", full)
 		n, err = someone.Write(full)
 		if err != nil || n < 0 {
 			utils.Logger.Print("udp packet response failed", err)
-			return info, errors.New("write to client response failed")
+			GPortQueue.Enqueue((Item)(info.udpport))
+			info.udpConnect.Close()
+			return nil, errors.New("write to client response failed")
 		}
 	}
 	return info, nil
@@ -232,8 +249,8 @@ func hand_local_routine(someone net.Conn, config *AppConfig) {
 		Copy_C2RAW(ssl, someone, nil)
 	} else if info.cmd == CMD_UDPASSOCIATE {
 		ch := make(chan string)
-		udpsocket := NewUDPSocket(remote, config.Password, iv, info, ch)
-		err := udpsend(udpsocket, someone)
+		udpsocket := NewUDPSocket(remote, config, iv, info, ch)
+		err := udpsend(udpsocket)
 		utils.Logger.Print("udp error: ", err)
 	}
 
@@ -244,9 +261,9 @@ func hand_local_routine(someone net.Conn, config *AppConfig) {
 
 func Run_Local_routine(config *AppConfig) {
 
-	all, err := net.Listen("tcp", "127.0.0.1"+":"+strconv.Itoa(config.LocalPort))
+	all, err := net.Listen("tcp", config.LocalAddress+":"+strconv.Itoa(config.LocalPort))
 	if err != nil {
-		utils.Logger.Print("local listen on   ip:port 127.0.0.1: failed!", strconv.Itoa(config.ServerPort), err)
+		utils.Logger.Print("local listen on   ip:port 127.0.0.1: failed!", config.LocalAddress, strconv.Itoa(config.ServerPort), err)
 		os.Exit(1)
 	}
 
@@ -261,5 +278,23 @@ func Run_Local_routine(config *AppConfig) {
 
 		go hand_local_routine(someone, config)
 	}
+
+}
+
+// GPortQueue ..
+var GPortQueue ItemQueue
+
+// PORTBASE ...
+const PORTBASE uint16 = 49800
+
+//InitializePort ..
+func InitializePort() int {
+	GPortQueue.New()
+	var i uint16
+	for i = 0; i < 200; i = i + 1 {
+		GPortQueue.Enqueue((Item)(PORTBASE + i))
+	}
+
+	return 0
 
 }
