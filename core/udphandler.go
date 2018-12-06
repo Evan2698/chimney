@@ -179,7 +179,7 @@ func udpsend(ss *UDPSocket) error {
 	defer func() {
 		ss.info.udpConnect.Close()
 		GPortQueue.Enqueue((Item)(ss.info.udpport))
-		utils.Logger.Print("Portsize: ", GPortQueue.Size())
+		utils.Logger.Print("will relese port: ", ss.info.udpport, "rest port size: ", GPortQueue.Size())
 	}()
 
 	udpaddress, err := ss.Raw2UDP(ss.info.udpConnect)

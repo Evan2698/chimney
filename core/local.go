@@ -163,10 +163,12 @@ func handle_local_server(someone net.Conn, config *AppConfig, iv []byte, remote 
 
 		udpPort := (uint16)(GPortQueue.Dequeue())
 		info.udpport = udpPort
+		utils.Logger.Print("alloc port for UDP: ", udpPort)
 
 		ip := net.ParseIP(config.LocalAddress).To4()
 		info.udpConnect, err = createUDPListen(ip.String(), info.udpport)
 		if err != nil {
+			GPortQueue.Enqueue((Item)(info.udpport))
 			utils.Logger.Print("create UDP listen failed ", ip.String(), ":", info.udpport)
 			return nil, errors.New("create UDP listen failed " + ip.String() + ":" + strconv.Itoa((int)(info.udpport)))
 		}
@@ -182,8 +184,8 @@ func handle_local_server(someone net.Conn, config *AppConfig, iv []byte, remote 
 		n, err = someone.Write(full)
 		if err != nil || n < 0 {
 			utils.Logger.Print("udp packet response failed", err)
-			GPortQueue.Enqueue((Item)(info.udpport))
 			info.udpConnect.Close()
+			GPortQueue.Enqueue((Item)(info.udpport))
 			return nil, errors.New("write to client response failed")
 		}
 	}
