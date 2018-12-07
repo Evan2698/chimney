@@ -177,7 +177,7 @@ func createTCPConnect(host string) (net.Conn, error) {
 
 func createDUPConnect(host string) (net.Conn, error) {
 
-	remote, err := net.Dial("udp", "8.8.8.8:53")
+	remote, err := net.Dial("udp", host)
 	if err != nil {
 		utils.Logger.Print("establish UDP Failed:  ", host, err)
 
