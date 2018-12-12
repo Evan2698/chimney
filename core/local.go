@@ -265,7 +265,7 @@ func Run_Local_routine(config *AppConfig) {
 
 	all, err := net.Listen("tcp", config.LocalAddress+":"+strconv.Itoa(config.LocalPort))
 	if err != nil {
-		utils.Logger.Print("local listen on   ip:port 127.0.0.1: failed!", config.LocalAddress, strconv.Itoa(config.ServerPort), err)
+		utils.Logger.Print("local listen on   ip =", config.LocalAddress, " port=", strconv.Itoa(config.LocalPort), err)
 		os.Exit(1)
 	}
 
