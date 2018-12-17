@@ -10,9 +10,6 @@ func main() {
 
 	for j := 0; j < 20; j = j + 1 {
 
-		//176.122.157.41
-		//61.135.169.125
-		//61.135.169.125
 		conn, fd, err := core.Build_low_socket("61.135.169.125", 80)
 
 		if err != nil {
