@@ -1,13 +1,20 @@
 package chimney
 
 import (
+	"syscall"
+
 	"github.com/Evan2698/chimney/core"
 )
 
 var gchimney *core.ListenHandle
 
 // StartChimney ..
-func StartChimney(s string, sport int, l string, lport int, pass string, path string) bool {
+func StartChimney(s string,
+	sport int,
+	l string,
+	lport int,
+	pass string,
+	path string) bool {
 
 	config := &core.AppConfig{
 		ServerPort:   sport,
@@ -34,4 +41,9 @@ func StopChimney() bool {
 
 	return true
 
+}
+
+// CloseFileDescriptor ..
+func CloseFileDescriptor(fd int) {
+	syscall.Close(fd)
 }
