@@ -266,7 +266,7 @@ func Run_Local_routine(config *AppConfig) {
 	all, err := net.Listen("tcp", config.LocalAddress+":"+strconv.Itoa(config.LocalPort))
 	if err != nil {
 		utils.Logger.Print("local listen on   ip =", config.LocalAddress, " port=", strconv.Itoa(config.LocalPort), err)
-		os.Exit(1)
+		return
 	}
 
 	defer all.Close()
@@ -275,12 +275,75 @@ func Run_Local_routine(config *AppConfig) {
 		someone, err := all.Accept()
 		if err != nil {
 			utils.Logger.Print("remote socket failed to open", err)
-			continue
+			break
 		}
 
 		go hand_local_routine(someone, config)
 	}
 
+}
+
+// ListenHandle ...
+type ListenHandle struct {
+	LocalListen  net.Listener // LocalListen ..
+	stopExitFlag bool
+}
+
+//BuildHandle ..
+func BuildHandle(listen net.Listener, stop bool) *ListenHandle {
+
+	return &ListenHandle{
+		LocalListen:  listen,
+		stopExitFlag: stop,
+	}
+}
+
+// RunAndroidListenLoop ...
+func RunAndroidListenLoop(config *AppConfig) *ListenHandle {
+
+	var err error
+
+	local, err := net.Listen("tcp", config.LocalAddress+":"+strconv.Itoa(config.LocalPort))
+	if err != nil {
+		utils.Logger.Print("local listen on   ip =", config.LocalAddress, " port=", strconv.Itoa(config.LocalPort), err)
+		return nil
+	}
+
+	handle := BuildHandle(local, false)
+
+	go func(h *ListenHandle) {
+		for {
+			someone, err := h.LocalListen.Accept()
+			if err != nil {
+
+				if h.stopExitFlag {
+					utils.Logger.Print("User will stop the android world!!", err)
+					break
+				}
+
+				utils.Logger.Print("remote socket failed to open", err)
+				continue
+			}
+
+			if h.stopExitFlag {
+				utils.Logger.Print("User will stop the android world!!2")
+				break
+			}
+
+			go hand_local_routine(someone, config)
+		}
+	}(handle)
+
+	return handle
+
+}
+
+//StopAndroidWorld ...
+func StopAndroidWorld(h *ListenHandle) {
+	if h != nil {
+		h.stopExitFlag = true
+		h.LocalListen.Close()
+	}
 }
 
 // GPortQueue ..

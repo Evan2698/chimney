@@ -55,11 +55,11 @@ func init() {
 	t := time.Now()
 	timestamp := strconv.FormatInt(t.UTC().UnixNano(), 10)
 	var logpath = "log_" + timestamp + ".txt"
-	/*	var file, err1 = os.Create(logpath)
-		if err1 != nil {
-			fmt.Print("can not create log file")
-			panic(err1)
-		}*/
+	/*var file, err1 = os.Create(logpath)
+	if err1 != nil {
+		fmt.Print("can not create log file")
+		panic(err1)
+	}*/
 
 	thislog := log.New(ioutil.Discard, "", log.LstdFlags|log.Lshortfile)
 
