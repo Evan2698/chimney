@@ -29,6 +29,9 @@ type ConnectInfo struct {
 	udpConnect *net.UDPConn // udp conect
 }
 
+// GUNIXPATH ..
+var GUNIXPATH = ""
+
 func NewSSocket(ss net.Conn, c string, i []byte) *SSocketWrapper {
 	return &SSocketWrapper{
 		src_socket: ss,

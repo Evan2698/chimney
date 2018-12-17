@@ -3,12 +3,13 @@
 package core
 
 import (
-	"github.com/Evan2698/chimney/unixsocket"
-	"github.com/Evan2698/chimney/utils"
 	"errors"
 	"net"
 	"os"
 	"syscall"
+
+	"github.com/Evan2698/chimney/unixsocket"
+	"github.com/Evan2698/chimney/utils"
 )
 
 func Build_low_socket(ipString string, port int) (*CommonSocket, error) {
@@ -56,17 +57,18 @@ func Build_low_socket(ipString string, port int) (*CommonSocket, error) {
 	}
 
 	init = true
-	return &CommonSocket {
-		Remote : conn,
-		Fd : uintptr (fd),
-		}, nil
+	return &CommonSocket{
+		Remote: conn,
+		Fd:     uintptr(fd),
+	}, nil
 }
 
 func protect_socket(fd int) error {
 
-	conn, err := net.Dial("unix", "protect_path")
+	var path = GUNIXPATH + "/protect_path"
+	conn, err := net.Dial("unix", path)
 	if err != nil {
-		utils.Logger.Println("can not create unix socket", err)
+		utils.Logger.Println("can not create unix socket", err, path)
 		return err
 	}
 
