@@ -3,13 +3,8 @@
 package core
 
 import (
-	"bytes"
-	"encoding/binary"
 	"math/rand"
-	"net"
 	"time"
-
-	"github.com/Evan2698/chimney/utils"
 )
 
 var last time.Time
@@ -41,7 +36,7 @@ func StatPackage(s uint64, r uint64) {
 }
 
 func sendimp(s uint64, r uint64) {
-	var path = GUNIXPATH + "/stat_path"
+	/*var path = GUNIXPATH + "/stat_path"
 	conn, err := net.Dial("unix", path)
 	if err != nil {
 		utils.Logger.Println("create statistics socket failed！", err, path)
@@ -60,5 +55,9 @@ func sendimp(s uint64, r uint64) {
 	utils.Logger.Println("statistics send ok!!")
 	out = make([]byte, 1)
 	n, _ := conn.Read(out)
-	utils.Logger.Println("statistics result:", out[0:n])
+	utils.Logger.Println("statistics result:", out[0:n])*/
+
+	if GFlow != nil {
+		GFlow.Update((int64)(s), (int64)(r))
+	}
 }

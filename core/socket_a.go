@@ -8,7 +8,6 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/Evan2698/chimney/unixsocket"
 	"github.com/Evan2698/chimney/utils"
 )
 
@@ -65,7 +64,7 @@ func Build_low_socket(ipString string, port int) (*CommonSocket, error) {
 
 func protect_socket(fd int) error {
 
-	var path = GUNIXPATH + "/protect_path"
+	/*var path = GUNIXPATH + "/protect_path"
 	conn, err := net.Dial("unix", path)
 	if err != nil {
 		utils.Logger.Println("can not create unix socket", err, path)
@@ -102,7 +101,13 @@ func protect_socket(fd int) error {
 	if n <= 0 || buf[0] != 0 {
 		utils.Logger.Println("unix send failed!!", buf)
 		return errors.New("unix protect socket failed!!")
+	}*/
+
+	if GSocketInterface == nil {
+		return errors.New("must register interface first")
 	}
+
+	GSocketInterface.Protect(fd)
 
 	return nil
 }

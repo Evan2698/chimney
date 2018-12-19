@@ -29,6 +29,22 @@ type ConnectInfo struct {
 	udpConnect *net.UDPConn // udp conect
 }
 
+// SocketService ...
+type SocketService interface {
+	Protect(fd int) bool
+}
+
+// DataFlowService ...
+type DataFlowService interface {
+	Update(up int64, down int64)
+}
+
+// GSocketInterface ..
+var GSocketInterface SocketService
+
+//GFlow ..
+var GFlow DataFlowService
+
 // GUNIXPATH ..
 var GUNIXPATH = ""
 

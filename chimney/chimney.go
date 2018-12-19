@@ -1,12 +1,22 @@
 package chimney
 
 import (
-	"syscall"
-
 	"github.com/Evan2698/chimney/core"
 )
 
 var gchimney *core.ListenHandle
+
+//ISocket ...
+type ISocket core.SocketService
+
+// IDataFlow ..
+type IDataFlow core.DataFlowService
+
+//Register ..
+func Register(v ISocket, k IDataFlow) {
+	core.GFlow = k
+	core.GSocketInterface = v
+}
 
 // StartChimney ..
 func StartChimney(s string,
@@ -41,9 +51,4 @@ func StopChimney() bool {
 
 	return true
 
-}
-
-// CloseFileDescriptor ..
-func CloseFileDescriptor(fd int) {
-	syscall.Close(fd)
 }
