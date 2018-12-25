@@ -97,7 +97,7 @@ func handle_local_server(someone net.Conn, config *AppConfig, iv []byte, remote 
 
 	info.cmd = (int)(buf[1])
 
-	if info.cmd != CMD_CONNECT && info.cmd != CMD_UDPASSOCIATE {
+	if info.cmd != CMD_CONNECT {
 		utils.Logger.Print("can not support it")
 		return info, errors.New("the method server can not support")
 	}

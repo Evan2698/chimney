@@ -1,35 +1,17 @@
 package chimney
 
 import (
-	"io"
-	"os"
-
-	netstack "github.com/Evan2698/android-netstack"
+	"github.com/eycorsican/go-tun2socks/cmd/ago"
 )
-
-var netdevice *netstack.NetStack2Socks
 
 //StartNetstackService ..
 func StartNetstackService(fd int, socks string, dns string) {
 
-	f := os.NewFile((uintptr)(fd), "")
-	var rwc io.ReadWriteCloser
-	rwc = f
-	dnsArray := make([]string, 1)
-	dnsArray[0] = dns
-	netdevice = netstack.New(rwc, socks, dnsArray, true, true)
-
-	go func(device *netstack.NetStack2Socks) {
-		netdevice.Run()
-
-	}(netdevice)
+	ago.Tun2SocksMain(fd)
 }
 
 //StopNetStackService ..
 func StopNetStackService() {
 
-	if netdevice != nil {
-		netdevice.Stop()
-	}
-	netdevice = nil
+	ago.StopTun2SocksMain()
 }

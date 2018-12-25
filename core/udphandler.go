@@ -14,7 +14,6 @@ type UDPSocket struct {
 	srcsocket net.Conn     // ..
 	config    *AppConfig   // ..
 	iv        []byte       // ..
-	done      chan string  // ..
 	info      *ConnectInfo // ..
 }
 
@@ -26,7 +25,6 @@ func NewUDPSocket(ss net.Conn, c *AppConfig, i []byte, al *ConnectInfo, ch chan 
 		config:    c,
 		iv:        i,
 		info:      al,
-		done:      ch,
 	}
 }
 
@@ -72,12 +70,12 @@ func (ssocket *UDPSocket) DUDP2RAW(raw *net.UDPConn, udpaddr *net.UDPAddr) error
 
 	header, ori, err := sos(ssocket)
 	if err != nil {
-		ssocket.done <- "done"
+
 		return errors.New("read packet failed")
 	}
 	addressLen := caladdress(header[3], ori[0])
 	if checkUDPTerminates(ori[:addressLen]) {
-		ssocket.done <- "done"
+
 		utils.Logger.Print("check ip address is finish marker.")
 		return errors.New("done")
 	}
@@ -90,7 +88,7 @@ func (ssocket *UDPSocket) DUDP2RAW(raw *net.UDPConn, udpaddr *net.UDPAddr) error
 
 	utils.Logger.Print("output: ", n, " bytes. ", err)
 	if err != nil {
-		ssocket.done <- "done"
+
 		return errors.New("UDP write ERROR")
 	}
 
@@ -125,26 +123,26 @@ func (ssocket *UDPSocket) Raw2UDP(raw *net.UDPConn) (*net.UDPAddr, error) {
 	n, udpaddr, err := raw.ReadFromUDP(buf)
 	if err != nil {
 		utils.Logger.Print("read UDP packet from raw socket failed", err, "bytes: ", n)
-		ssocket.done <- "done"
+
 		return nil, err
 	}
 
 	utils.Logger.Print("bowser udp: ", buf[:n], err, "read bytes: ", n)
 	if n < 4+2 {
 		utils.Logger.Print("UDP format incorrect from raw socket!!!")
-		ssocket.done <- "done"
+
 		return nil, errors.New("UDP format incorectly")
 	}
 
 	if checkUDPTerminates(buf[4 : 4+caladdress(buf[3], buf[4])]) {
-		ssocket.done <- "done"
+
 		return nil, errors.New("client done")
 	}
 
 	out, err := sercurity.CompressWithChaCha20(buf[4:n], ssocket.iv[:8], sercurity.MakeCompressKey(ssocket.config.Password))
 	if err != nil {
 		utils.Logger.Print("compress UDP failed! ", err)
-		ssocket.done <- "done"
+
 		return nil, err
 	}
 
@@ -156,7 +154,7 @@ func (ssocket *UDPSocket) Raw2UDP(raw *net.UDPConn) (*net.UDPAddr, error) {
 	utils.Logger.Print("write compress UDP packet result: ", err, "write bytes: ", on, "bytes.", full)
 
 	if err != nil {
-		ssocket.done <- "done"
+
 		return nil, err
 	}
 
@@ -253,7 +251,7 @@ func (ssocket *UDPSocket) readUDPD() error {
 	n, err = udpConnect.Read(buf)
 	utils.Logger.Print("----------------------------------------")
 	if err != nil {
-		ssocket.done <- "done"
+
 		utils.Logger.Print("read udp host failed: ", err, "bytes: ", n)
 		return err
 	}
@@ -263,7 +261,7 @@ func (ssocket *UDPSocket) readUDPD() error {
 	lop := append(ori[:addrLen], buf[:n]...)
 	udppacket, err := sercurity.CompressWithChaCha20(lop, ssocket.iv[:8], sercurity.MakeCompressKey(ssocket.config.Password))
 	if err != nil {
-		ssocket.done <- "done"
+
 		utils.Logger.Print("compress UDP failed", err, "bytes: ")
 		return err
 	}
@@ -273,7 +271,7 @@ func (ssocket *UDPSocket) readUDPD() error {
 	out := append(full, udppacket...)
 	n, err = ssocket.srcsocket.Write(out)
 	if err != nil {
-		ssocket.done <- "done"
+
 		utils.Logger.Print("remote write UDP failed!", err)
 	}
 	utils.Logger.Print("write ", n, "bytes.", err)
@@ -297,7 +295,7 @@ func (ssocket *UDPSocket) rawToUPD(raw *net.Conn, header []byte) error {
 	n, err := (*raw).Read(buf)
 	utils.Logger.Print("----------------------------------------")
 	if err != nil {
-		ssocket.done <- "done"
+
 		utils.Logger.Print("read udp host failed: ", err, "bytes: ", n)
 		return err
 	}
@@ -307,7 +305,7 @@ func (ssocket *UDPSocket) rawToUPD(raw *net.Conn, header []byte) error {
 	lop := append(header[4:], buf[:n]...)
 	ori, err := sercurity.CompressWithChaCha20(lop, ssocket.iv[:8], sercurity.MakeCompressKey(ssocket.config.Password))
 	if err != nil {
-		ssocket.done <- "done"
+
 		utils.Logger.Print("compress UDP failed", err, "bytes: ")
 		return err
 	}
@@ -317,7 +315,7 @@ func (ssocket *UDPSocket) rawToUPD(raw *net.Conn, header []byte) error {
 	out := append(full, ori...)
 	n, err = ssocket.srcsocket.Write(out)
 	if err != nil {
-		ssocket.done <- "done"
+
 		utils.Logger.Print("remote write UDP failed!", err)
 	}
 	utils.Logger.Print("write ", n, "bytes.", err)
