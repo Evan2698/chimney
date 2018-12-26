@@ -1,17 +1,15 @@
 package chimney
 
 import (
-	"github.com/eycorsican/go-tun2socks/cmd/ago"
+	"github.com/Evan2698/android-netstack/cmd/astack"
 )
 
 //StartNetstackService ..
 func StartNetstackService(fd int, socks string, dns string) {
-
-	ago.Tun2SocksMain(fd)
+	astack.StartNetstackService(fd, socks, dns)
 }
 
 //StopNetStackService ..
 func StopNetStackService() {
-
-	ago.StopTun2SocksMain()
+	astack.StopNetStackService()
 }
