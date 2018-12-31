@@ -32,7 +32,7 @@ func StartChimney(s string,
 		LocalAddress: l,
 		Server:       s,
 		Password:     pass,
-		Timeout:      600,
+		Timeout:      1000,
 	}
 
 	core.GUNIXPATH = path
