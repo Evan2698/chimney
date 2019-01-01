@@ -36,27 +36,6 @@ func StatPackage(s uint64, r uint64) {
 }
 
 func sendimp(s uint64, r uint64) {
-	/*var path = GUNIXPATH + "/stat_path"
-	conn, err := net.Dial("unix", path)
-	if err != nil {
-		utils.Logger.Println("create statistics socket failed！", err, path)
-		return
-	}
-
-	defer conn.Close()
-
-	buf := new(bytes.Buffer)
-	binary.Write(buf, binary.LittleEndian, s)
-	bufh := new(bytes.Buffer)
-	binary.Write(bufh, binary.LittleEndian, r)
-	out := append(buf.Bytes(), bufh.Bytes()...)
-
-	conn.Write(out)
-	utils.Logger.Println("statistics send ok!!")
-	out = make([]byte, 1)
-	n, _ := conn.Read(out)
-	utils.Logger.Println("statistics result:", out[0:n])*/
-
 	if GFlow != nil {
 		GFlow.Update((int64)(s), (int64)(r))
 	}
