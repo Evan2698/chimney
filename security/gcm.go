@@ -5,8 +5,9 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"io"
-	"socks5/utils"
 	"time"
+
+	"github.com/Evan2698/chimney/utils"
 )
 
 type gcm struct {

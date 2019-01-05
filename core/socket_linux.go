@@ -2,7 +2,8 @@ package core
 
 import (
 	"net"
-	"socks5/utils"
+
+	"github.com/Evan2698/chimney/utils"
 )
 
 func createclientsocket(host string, p SocketService) (net.Conn, error) {

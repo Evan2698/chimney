@@ -8,11 +8,12 @@ import (
 	"os/signal"
 	"path/filepath"
 	"runtime"
-	"socks5/config"
-	"socks5/core"
-	"socks5/utils"
 	"strconv"
 	"syscall"
+
+	"github.com/Evan2698/chimney/config"
+	"github.com/Evan2698/chimney/core"
+	"github.com/Evan2698/chimney/utils"
 )
 
 func main() {

@@ -4,5 +4,5 @@ import "log"
 
 func init() {
 	LOG = &mylog{}
-	log.SetOutput(setlogglobal())
+	log.SetOutput(setlogglobalNULL())
 }

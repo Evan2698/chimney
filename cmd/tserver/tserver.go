@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"net"
-	"socks5/core"
-	"socks5/security"
+
+	"github.com/Evan2698/chimney/security"
+
+	"github.com/Evan2698/chimney/core"
 )
 
 func main() {

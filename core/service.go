@@ -2,9 +2,11 @@ package core
 
 import (
 	"net"
-	"socks5/config"
-	"socks5/utils"
 	"strconv"
+
+	"github.com/Evan2698/chimney/utils"
+
+	"github.com/Evan2698/chimney/config"
 )
 
 // Runclientsservice ...

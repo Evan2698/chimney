@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"encoding/hex"
 	"errors"
-	"socks5/config"
-	"socks5/security"
-	"socks5/utils"
+
+	"github.com/Evan2698/chimney/utils"
+
+	"github.com/Evan2698/chimney/security"
+
+	"github.com/Evan2698/chimney/config"
 )
 
 type psocks struct {

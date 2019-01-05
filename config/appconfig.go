@@ -41,9 +41,9 @@ func Parse(path string) (config *AppConfig, err error) {
 
 // DumpConfig ..
 func DumpConfig(config *AppConfig) {
-	utils.Logger.Print("server :", config.Server)
-	utils.Logger.Print("server_port :", config.ServerPort)
-	utils.Logger.Print("local_port :", config.LocalPort)
-	utils.Logger.Print("password :", config.Password)
-	utils.Logger.Print("timeout :", config.Timeout)
+	utils.LOG.Print("server :", config.Server)
+	utils.LOG.Print("server_port :", config.ServerPort)
+	utils.LOG.Print("local_port :", config.LocalPort)
+	utils.LOG.Print("password :", config.Password)
+	utils.LOG.Print("timeout :", config.Timeout)
 }

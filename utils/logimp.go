@@ -60,6 +60,6 @@ func setlogglobal() io.Writer {
 }
 
 func setlogglobalNULL() io.Writer {
-	return io.MultiWriter(os.Stdout, ioutil.Discard)
+	return ioutil.Discard
 
 }

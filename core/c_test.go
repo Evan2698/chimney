@@ -1,8 +1,9 @@
 package core
 
 import (
-	"socks5/utils"
 	"testing"
+
+	"github.com/Evan2698/chimney/utils"
 )
 
 func TestKOP(t *testing.T) {

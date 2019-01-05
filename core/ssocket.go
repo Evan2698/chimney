@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"socks5/security"
-	"socks5/utils"
+
+	"github.com/Evan2698/chimney/utils"
+
+	"github.com/Evan2698/chimney/security"
 )
 
 const (

@@ -6,11 +6,14 @@ import (
 	"encoding/binary"
 	"errors"
 	"net"
-	"socks5/config"
-	"socks5/security"
-	"socks5/utils"
 	"strconv"
 	"strings"
+
+	"github.com/Evan2698/chimney/utils"
+
+	"github.com/Evan2698/chimney/security"
+
+	"github.com/Evan2698/chimney/config"
 )
 
 const (
