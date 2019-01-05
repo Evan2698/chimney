@@ -1,0 +1,49 @@
+package config
+
+import (
+	"encoding/json"
+	"io/ioutil"
+	"os"
+
+	"github.com/Evan2698/chimney/utils"
+)
+
+// AppConfig ..
+type AppConfig struct {
+	ServerPort   int    `json:"server_port"`
+	LocalPort    int    `json:"local_port"`
+	LocalAddress string `json:"local_address"`
+	Password     string `json:"password"`
+	Timeout      int    `json:"timeout"`
+	Server       string `json:"server"`
+}
+
+// Parse ..
+func Parse(path string) (config *AppConfig, err error) {
+	file, err := os.Open(path) // For read access.
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+
+	config = &AppConfig{}
+	if err = json.Unmarshal(data, config); err != nil {
+		return nil, err
+	}
+
+	return config, nil
+}
+
+// DumpConfig ..
+func DumpConfig(config *AppConfig) {
+	utils.Logger.Print("server :", config.Server)
+	utils.Logger.Print("server_port :", config.ServerPort)
+	utils.Logger.Print("local_port :", config.LocalPort)
+	utils.Logger.Print("password :", config.Password)
+	utils.Logger.Print("timeout :", config.Timeout)
+}
