@@ -1,8 +1,11 @@
 package chimney
 
 import (
-	"socks5/config"
-	"socks5/core"
+	"net"
+
+	"github.com/Evan2698/chimney/core"
+
+	"github.com/Evan2698/chimney/config"
 )
 
 //ISocket ...
@@ -11,10 +14,14 @@ type ISocket core.SocketService
 // IDataFlow ..
 type IDataFlow core.DataFlow
 
+var flow IDataFlow
+var sockets ISocket
+var handle net.Listener
+
 //Register ..
 func Register(v ISocket, k IDataFlow) {
-	//core.GFlow = k
-	//core.GSocketInterface = v
+	flow = k
+	sockets = v
 }
 
 // StartChimney ..
@@ -25,25 +32,31 @@ func StartChimney(s string,
 	pass string,
 	path string) bool {
 
+	ch := make(chan net.Listener, 1)
+
 	config := &config.AppConfig{
 		ServerPort:   sport,
 		LocalPort:    lport,
 		LocalAddress: l,
 		Server:       s,
 		Password:     pass,
-		Timeout:      1000,
+		Timeout:      600,
 	}
 
-	return config == nil
+	go core.Runclientsservice("127.0.0.1:1080", config, sockets, flow, ch)
+	handle, _ := <-ch
+
+	close(ch)
+	return handle != nil
 }
 
 // StopChimney ..
 func StopChimney() bool {
 
-	//if gchimney != nil {
-	//	core.StopAndroidWorld(gchimney)
-	//}
-
+	if handle != nil {
+		handle.Close()
+		handle = nil
+	}
 	return true
 
 }

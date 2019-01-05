@@ -10,7 +10,7 @@ import (
 )
 
 // Runclientsservice ...
-func Runclientsservice(host string, app *config.AppConfig, p SocketService, f DataFlow) {
+func Runclientsservice(host string, app *config.AppConfig, p SocketService, f DataFlow, ch chan net.Listener) {
 
 	all, err := net.Listen("tcp", host)
 	if err != nil {
@@ -18,6 +18,10 @@ func Runclientsservice(host string, app *config.AppConfig, p SocketService, f Da
 		return
 	}
 	defer all.Close()
+
+	if ch != nil {
+		ch <- all
+	}
 	for {
 		someone, err := all.Accept()
 		if err != nil {

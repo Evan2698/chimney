@@ -50,7 +50,7 @@ func main() {
 
 	host := net.JoinHostPort(config.LocalAddress, strconv.Itoa(int(config.LocalPort)))
 
-	go core.Runclientsservice(host, config, nil, nil)
+	go core.Runclientsservice(host, config, nil, nil, nil)
 
 	waits()
 }
