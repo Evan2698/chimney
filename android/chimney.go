@@ -2,8 +2,10 @@ package chimney
 
 import (
 	"net"
+	"time"
 
 	"github.com/Evan2698/chimney/core"
+	"github.com/Evan2698/chimney/utils"
 
 	"github.com/Evan2698/chimney/config"
 )
@@ -16,7 +18,8 @@ type IDataFlow core.DataFlow
 
 var flow IDataFlow
 var sockets ISocket
-var handle net.Listener
+
+var quit chan int
 
 //Register ..
 func Register(v ISocket, k IDataFlow) {
@@ -32,31 +35,32 @@ func StartChimney(s string,
 	pass string,
 	path string) bool {
 
-	ch := make(chan net.Listener, 1)
-
 	config := &config.AppConfig{
 		ServerPort:   sport,
 		LocalPort:    lport,
 		LocalAddress: l,
 		Server:       s,
 		Password:     pass,
-		Timeout:      600,
+		Timeout:      30,
 	}
-
-	go core.Runclientsservice("127.0.0.1:1080", config, sockets, flow, ch)
-	handle, _ := <-ch
-
-	close(ch)
-	return handle != nil
+	quit = make(chan int, 1)
+	go core.Runclientsservice("127.0.0.1:1080", config, sockets, flow, quit)
+	return true
 }
 
 // StopChimney ..
 func StopChimney() bool {
 
-	if handle != nil {
-		handle.Close()
-		handle = nil
+	if quit != nil {
+		utils.LOG.Println("stop stop stop stop stop")
+		quit <- 1
+		con, _ := net.Dial("tcp", "127.0.0.1:1080")
+		con.Close()
+		utils.LOG.Println("end end end end stop")
+		time.Sleep(time.Second * 2)
+		close(quit)
+		quit = nil
 	}
-	return true
 
+	return true
 }

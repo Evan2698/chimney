@@ -13,4 +13,7 @@ func TestKOP(t *testing.T) {
 	u := utils.Bytes2Int(abc)
 	t.Log(u)
 
+	var v []byte
+	t.Log(len(v))
+
 }

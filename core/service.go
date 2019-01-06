@@ -10,27 +10,38 @@ import (
 )
 
 // Runclientsservice ...
-func Runclientsservice(host string, app *config.AppConfig, p SocketService, f DataFlow, ch chan net.Listener) {
-
+func Runclientsservice(host string, app *config.AppConfig, p SocketService, f DataFlow, quit <-chan int) {
 	all, err := net.Listen("tcp", host)
 	if err != nil {
 		utils.LOG.Print("local listen on   ip =", host, err)
 		return
 	}
-	defer all.Close()
 
-	if ch != nil {
-		ch <- all
-	}
+	defer func() {
+		utils.LOG.Println("listener will be close.^_^")
+		all.Close()
+		utils.LOG.Println("Runclientsservice is over!!!!^_^")
+	}()
+
 	for {
 		someone, err := all.Accept()
 		if err != nil {
-			utils.LOG.Print("remote socket failed to open", err)
+			utils.LOG.Print("Accept failed: ", err)
 			break
 		}
-
 		go handclientonesocket(someone, app, p, f)
+
+		if quit != nil {
+			select {
+			case <-quit:
+				utils.LOG.Println("will be exit!!")
+				return
+			default:
+			}
+		}
 	}
+
+	utils.LOG.Print("exit exit exit exit", err)
 }
 
 func handclientonesocket(o net.Conn, app *config.AppConfig, p SocketService, f DataFlow) {
