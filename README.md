@@ -1,7 +1,6 @@
 # Chimney
 
-Access network from china for everyone.
-
+This is socks5 proxy with encryption, you can use it to access youtube etc.
 
 
 # Version
