@@ -3,7 +3,6 @@ package utils
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"runtime"
@@ -50,16 +49,23 @@ func setlogglobal() io.Writer {
 	t := time.Now()
 	timestamp := strconv.FormatInt(t.UTC().UnixNano(), 10)
 	var logpath = "log_" + timestamp + ".txt"
-	var file, err1 = os.Create(logpath)
+	var file io.Writer
+	var err1 error
+	file, err1 = os.Create(logpath)
 	if err1 != nil {
-		fmt.Print("can not create log file")
-		panic(err1)
+		fmt.Print("can not create log file", err1)
+		file = &highspeeddevice{}
 	}
 	return io.MultiWriter(os.Stdout, file)
+}
 
+type highspeeddevice struct {
+}
+
+func (high *highspeeddevice) Write(p []byte) (n int, err error) {
+	return len(p), nil
 }
 
 func setlogglobalNULL() io.Writer {
-	return ioutil.Discard
-
+	return &highspeeddevice{}
 }
