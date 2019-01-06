@@ -4,7 +4,9 @@ import (
 	"crypto/rand"
 	"errors"
 	"io"
+	"time"
 
+	"github.com/Evan2698/chimney/utils"
 	"github.com/Yawning/chacha20"
 )
 
@@ -14,11 +16,15 @@ type cha20 struct {
 }
 
 func (chacha *cha20) Compress(src []byte, key []byte) ([]byte, error) {
+	t1 := time.Now() // get current time
+	defer func() {
+		elapsed := time.Since(t1)
+		utils.LOG.Println("takes time(Compress): ", elapsed.String())
+	}()
+
 	if len(key) != 32 || len(src) == 0 {
 		return nil, errors.New("parameter is invalid")
 	}
-
-	//t1 := time.Now() // get current time
 
 	dst := make([]byte, len(src))
 
@@ -28,9 +34,6 @@ func (chacha *cha20) Compress(src []byte, key []byte) ([]byte, error) {
 	}
 
 	a.XORKeyStream(dst, src)
-
-	//elapsed := time.Since(t1)
-	//utils.LOG.Println("takes time(Compress): ", elapsed.String())
 
 	return dst, nil
 

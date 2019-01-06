@@ -17,6 +17,11 @@ type gcm struct {
 
 func (g *gcm) Compress(src []byte, key []byte) ([]byte, error) {
 	t1 := time.Now() // get current time
+	defer func() {
+		elapsed := time.Since(t1)
+		utils.LOG.Println("takes time(Compress): ", elapsed.String())
+	}()
+
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		utils.LOG.Println("key of AES is invalid!")
@@ -30,15 +35,16 @@ func (g *gcm) Compress(src []byte, key []byte) ([]byte, error) {
 	}
 
 	ciphertext := aesgcm.Seal(nil, g.iv, src, nil)
-
-	elapsed := time.Since(t1)
-	utils.LOG.Println("takes time(Compress): ", elapsed.String())
-
 	return ciphertext, nil
 }
 
 func (g *gcm) Uncompress(src []byte, key []byte) ([]byte, error) {
 	t1 := time.Now() // get current time
+	defer func() {
+		elapsed := time.Since(t1)
+		utils.LOG.Println("takes time(Uncompress): ", elapsed.String())
+	}()
+
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		utils.LOG.Println("key of AES is invalid!(uncompress)")
@@ -52,10 +58,6 @@ func (g *gcm) Uncompress(src []byte, key []byte) ([]byte, error) {
 	}
 
 	plaintext, err := aesgcm.Open(nil, g.iv, src, nil)
-
-	elapsed := time.Since(t1)
-	utils.LOG.Println("takes time(Uncompress): ", elapsed.String())
-
 	return plaintext, err
 }
 
