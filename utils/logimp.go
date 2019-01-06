@@ -66,6 +66,6 @@ func (high *highspeeddevice) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func setlogglobalNULL() io.Writer {
+func setlogglobalnull() io.Writer {
 	return &highspeeddevice{}
 }
