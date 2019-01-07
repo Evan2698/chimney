@@ -87,19 +87,25 @@ func FromByte(buf []byte) (EncryptThings, error) {
 
 	op := bytes.NewBuffer(buf)
 
-	l := op.Next(1)
+	var name string
+	l := op.Next(2)
+
 	if len(l) < 1 {
 		return nil, errors.New("out of length")
 	}
-	value := int(l[0])
-
-	name := string(op.Next(value))
+	if l[0] == 0x14 && l[1] == 0x15 {
+		name = "chacha20"
+	} else if l[0] == 0x05 && l[1] == 0x16 {
+		name = "gcm"
+	}
+	if len(name) < 1 {
+		return nil, errors.New("out of length")
+	}
 	lvl := op.Next(1)
-
 	if len(lvl) < 1 {
 		return nil, errors.New("out of length")
 	}
-	value = int(lvl[0])
+	value := int(lvl[0])
 	iv := op.Next(value)
 
 	return NewEncryptyMethodWithIV(name, iv), nil
@@ -110,10 +116,11 @@ func ToBytes(I EncryptThings) []byte {
 
 	var op bytes.Buffer
 
-	nalen := byte(len(I.GetName()))
-	op.WriteByte(nalen)
-	op.WriteString(I.GetName())
-
+	if I.GetName() == "chacha20" {
+		op.Write([]byte{0x14, 0x15})
+	} else {
+		op.Write([]byte{0x05, 0x16})
+	}
 	lv := (byte)(len(I.GetIV()))
 	op.WriteByte(lv)
 	op.Write(I.GetIV())
