@@ -6,8 +6,9 @@ import (
 	"io"
 	"time"
 
+	"chacha20"
+
 	"github.com/Evan2698/chimney/utils"
-	"github.com/Yawning/chacha20"
 )
 
 type cha20 struct {
@@ -28,7 +29,7 @@ func (chacha *cha20) Compress(src []byte, key []byte) ([]byte, error) {
 
 	dst := make([]byte, len(src))
 
-	a, err := chacha20.NewCipher(key, chacha.iv)
+	a, err := chacha20.NewXChaCha(key, chacha.iv)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +45,7 @@ func (chacha *cha20) Uncompress(src []byte, key []byte) ([]byte, error) {
 }
 
 func (chacha *cha20) MakeSalt() []byte {
-	nonce := make([]byte, 8)
+	nonce := make([]byte, 24)
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
 		return nil
 	}

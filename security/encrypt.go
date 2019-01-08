@@ -75,7 +75,10 @@ func NewEncryptyMethodWithIV(name string, iv []byte) EncryptThings {
 			name: "gcm",
 		}
 	}
-	i.SetIV(iv)
+
+	c := make([]byte, len(iv))
+	copy(c, iv)
+	i.SetIV(c)
 	return i
 }
 
