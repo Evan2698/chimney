@@ -6,7 +6,7 @@ import (
 	"io"
 	"time"
 
-	"chacha20"
+	"github.com/Evan2698/chimney/security/chacha20"
 
 	"github.com/Evan2698/chimney/utils"
 )
