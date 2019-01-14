@@ -2,7 +2,6 @@ package core
 
 import (
 	"net"
-	"strconv"
 
 	"github.com/Evan2698/chimney/utils"
 
@@ -47,22 +46,10 @@ func Runclientsservice(host string, app *config.AppConfig, p SocketService, f Da
 func handclientonesocket(o net.Conn, app *config.AppConfig, p SocketService, f DataFlow) {
 
 	utils.SetSocketTimeout(o, app.Timeout)
-
-	proxyhost := net.JoinHostPort(app.Server, strconv.Itoa(int(app.ServerPort)))
-	con, err := createclientsocket(proxyhost, p)
-	if err != nil {
-		o.Close()
-		utils.LOG.Print("create socket failed", err)
-		return
-	}
-	utils.SetSocketTimeout(con, app.Timeout)
-
-	ss := NewSocksSocket(con, app.Password, nil)
-	proxysocket := NewSocketProxy(ss, app)
-	h := NewSocksHandler(o, proxysocket, app)
+	h := NewSocksHandler(o, nil, app)
 	defer h.Close()
 
-	err = h.Receive()
+	err := h.Receive(p)
 	if err != nil {
 		utils.LOG.Print("client recv failed: ", err)
 		return
@@ -97,7 +84,7 @@ func handServeronesocket(o net.Conn, app *config.AppConfig, p SocketService, f D
 	h := NewSocksHandler(nil, proxysocket, app)
 	defer h.Close()
 
-	err := h.Receive()
+	err := h.Receive(p)
 	if err != nil {
 		utils.LOG.Print("client recv failed", err)
 		return

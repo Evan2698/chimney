@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Evan2698/chimney/geo"
 	"github.com/Evan2698/chimney/utils"
 
 	"github.com/Evan2698/chimney/security"
@@ -28,7 +29,21 @@ type socksreceive struct {
 	appcon *config.AppConfig
 }
 
-func (s *socksreceive) Receive() error {
+func (s *socksreceive) createproxy(app *config.AppConfig, p SocketService) (SocksProxy, error) {
+	proxyhost := net.JoinHostPort(app.Server, strconv.Itoa(int(app.ServerPort)))
+	con, err := createclientsocket(proxyhost, p)
+	if err != nil {
+		utils.LOG.Print("create socket failed", err)
+		return nil, err
+	}
+	utils.SetSocketTimeout(con, app.Timeout)
+	ss := NewSocksSocket(con, app.Password, nil)
+	proxysocket := NewSocketProxy(ss, app)
+
+	return proxysocket, nil
+}
+
+func (s *socksreceive) Receive(p SocketService) error {
 
 	if s.src == nil {
 		return s.handleServerResponse()
@@ -70,9 +85,34 @@ func (s *socksreceive) Receive() error {
 		return errors.New("it does not support this method")
 	}
 
-	utils.LOG.Println("CMD:", buf[:n])
+	data := buf[:n]
+	utils.LOG.Println("CMD:", data)
+	if data[3] == 0x1 || data[3] == 0x4 {
+		ip := net.IP(data[4 : len(data)-2])
+		result := geo.QueryCountryByIP(ip)
+		if result == "CN" {
+			port := binary.BigEndian.Uint16(data[len(data)-2:])
+			host := net.JoinHostPort(ip.String(), strconv.Itoa(int(port)))
+			con, err := createclientsocket(host, p)
+			if err != nil {
+				s.src.Write([]byte{0x05, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
+				utils.LOG.Print("it does not support this method.", err)
+				return err
+			}
+			s.proxy = NewDirectProxy(con)
+		}
+	}
 
-	err = s.proxy.Connect(buf[:n])
+	if s.proxy == nil {
+		s.proxy, err = s.createproxy(s.appcon, p)
+		if err != nil {
+			s.src.Write([]byte{0x05, 0x04, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
+			utils.LOG.Print("c", err)
+			return errors.New("can not connect proxy sever")
+		}
+	}
+
+	err = s.proxy.Connect(data)
 	if err != nil {
 		s.src.Write([]byte{0x05, 0x05, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 		utils.LOG.Print("can not connect server.", err)

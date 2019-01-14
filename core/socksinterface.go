@@ -34,6 +34,6 @@ type SocksProxy interface {
 // SocksHandler ...
 type SocksHandler interface {
 	Close() error
-	Receive() error
+	Receive(p SocketService) error
 	Run(f DataFlow)
 }

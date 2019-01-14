@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"errors"
+	"net"
 
 	"github.com/Evan2698/chimney/utils"
 
@@ -135,5 +136,44 @@ func NewSocketProxy(c SSocket, a *config.AppConfig) SocksProxy {
 	return &psocks{
 		path: c,
 		app:  a,
+	}
+}
+
+type directcn struct {
+	rawCon net.Conn
+}
+
+func (s *directcn) Read() (buf []byte, err error) {
+
+	buf = make([]byte, bufsize)
+	n, err := s.rawCon.Read(buf)
+	return buf[:n], err
+}
+
+func (s *directcn) Write(p []byte) error {
+	_, err := s.rawCon.Write(p)
+	return err
+}
+
+func (s *directcn) SetEncrypt(I security.EncryptThings) {
+
+}
+
+func (s *directcn) Close() error {
+	if s.rawCon != nil {
+		s.rawCon.Close()
+	}
+	s.rawCon = nil
+	return nil
+}
+
+func (s *directcn) Connect(remoteaddr []byte) error {
+	return nil
+}
+
+//NewDirectProxy ..
+func NewDirectProxy(con net.Conn) SocksProxy {
+	return &directcn{
+		rawCon: con,
 	}
 }

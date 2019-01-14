@@ -24,7 +24,7 @@ func main() {
 		}
 
 		go func() {
-			gcm := security.NewEncryptyMethod("")
+			gcm := security.NewEncryptyMethod("chacha20")
 			one.Write(security.ToBytes(gcm))
 			t := core.NewSocksSocket(one, "zhangweihua", gcm)
 			defer t.Close()
