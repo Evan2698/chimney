@@ -28,6 +28,9 @@ type EncryptThings interface {
 
 	//GetName
 	GetName() string
+
+	//GetSize
+	GetSize() int
 }
 
 //BuildMacHash ..

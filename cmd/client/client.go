@@ -51,6 +51,13 @@ func main() {
 	host := net.JoinHostPort(config.LocalAddress, strconv.Itoa(int(config.LocalPort)))
 
 	go core.Runclientsservice(host, config, nil, nil, nil)
+	con, err := core.SclientRoutine(config, nil)
+	if err != nil {
+		utils.LOG.Print("UDP server failed", err)
+		os.Exit(1)
+	}
+
+	defer con.Close()
 
 	waits()
 }

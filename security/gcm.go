@@ -80,3 +80,7 @@ func (g *gcm) SetIV(iv []byte) {
 func (g *gcm) GetName() string {
 	return g.name
 }
+
+func (g *gcm) GetSize() int {
+	return 2 + 1 + len(g.iv)
+}

@@ -63,3 +63,7 @@ func (chacha *cha20) SetIV(iv []byte) {
 func (chacha *cha20) GetName() string {
 	return chacha.name
 }
+
+func (chacha *cha20) GetSize() int {
+	return 2 + 1 + len(chacha.iv)
+}

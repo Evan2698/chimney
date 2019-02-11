@@ -31,7 +31,7 @@ type socksreceive struct {
 
 func (s *socksreceive) createproxy(app *config.AppConfig, p SocketService) (SocksProxy, error) {
 	proxyhost := net.JoinHostPort(app.Server, strconv.Itoa(int(app.ServerPort)))
-	con, err := createclientsocket(proxyhost, p)
+	con, err := createclientsocket(proxyhost, p, "tcp")
 	if err != nil {
 		utils.LOG.Print("create socket failed", err)
 		return nil, err
@@ -93,7 +93,7 @@ func (s *socksreceive) Receive(p SocketService) error {
 		if result == "CN" {
 			port := binary.BigEndian.Uint16(data[len(data)-2:])
 			host := net.JoinHostPort(ip.String(), strconv.Itoa(int(port)))
-			con, err := createclientsocket(host, p)
+			con, err := createclientsocket(host, p, "tcp")
 			if err != nil {
 				s.src.Write([]byte{0x05, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 				utils.LOG.Print("it does not support this method.", err)

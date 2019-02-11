@@ -9,23 +9,38 @@ import (
 	"github.com/Evan2698/chimney/utils"
 )
 
-func createclientsocket(host string, p SocketService) (net.Conn, error) {
+func createclientsocket(host string, p SocketService, network string) (net.Conn, error) {
 	var outcon net.Conn
 	var err error
+	var hostip net.IP
+	var port int
 	init := false
 	if p != nil {
-		tcpAddr, err := net.ResolveTCPAddr("tcp", host)
-		if err != nil {
-			utils.LOG.Print("parse tcp address failed: ", err)
-			return nil, err
+
+		if network == "tcp" {
+			tcpAddr, err := net.ResolveTCPAddr("tcp", host)
+			if err != nil {
+				utils.LOG.Print("parse tcp address failed: ", err)
+				return nil, err
+			}
+			hostip = tcpAddr.IP
+			port = tcpAddr.Port
+		} else if network == "udp" {
+			tcpAddr, err := net.ResolveUDPAddr("udp", host)
+			if err != nil {
+				utils.LOG.Print("parse tcp address failed: ", err)
+				return nil, err
+			}
+			hostip = tcpAddr.IP
+			port = tcpAddr.Port
 		}
 
 		var sa syscall.Sockaddr
-		if tcpAddr.IP.To4() == nil {
-			ipa := tcpAddr.IP.To16()
-			utils.LOG.Println("I am ipv6 ", ipa, tcpAddr.Port, len(tcpAddr.IP))
+		if hostip.To4() == nil {
+			ipa := hostip.To16()
+			utils.LOG.Println("I am ipv6 ", ipa, port, len(hostip))
 			sa = &syscall.SockaddrInet6{
-				Port: tcpAddr.Port,
+				Port: port,
 				Addr: [16]byte{ipa[0], ipa[1], ipa[2], ipa[3],
 					ipa[4], ipa[5], ipa[6],
 					ipa[7], ipa[8], ipa[9],
@@ -34,15 +49,20 @@ func createclientsocket(host string, p SocketService) (net.Conn, error) {
 			}
 
 		} else {
-			ipa := tcpAddr.IP.To4()
-			utils.LOG.Println("I am ipv4 ", ipa, tcpAddr.Port)
+			ipa := hostip.To4()
+			utils.LOG.Println("I am ipv4 ", ipa, port)
 			sa = &syscall.SockaddrInet4{
-				Port: tcpAddr.Port,
+				Port: port,
 				Addr: [4]byte{ipa[0], ipa[1], ipa[2], ipa[3]},
 			}
 		}
 
-		fd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, syscall.IPPROTO_TCP)
+		var fd int
+		if network == "tcp" {
+			fd, err = syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, syscall.IPPROTO_TCP)
+		} else {
+			fd, err = syscall.Socket(syscall.AF_INET, syscall.SOCK_DGRAM, syscall.IPPROTO_UDP)
+		}
 		if err != nil {
 			utils.LOG.Print("create socket failed", err)
 			return nil, err
@@ -60,16 +80,18 @@ func createclientsocket(host string, p SocketService) (net.Conn, error) {
 			return nil, errors.New("protect socket failed")
 		}
 
-		err = syscall.SetsockoptInt(fd, syscall.IPPROTO_IP, syscall.IP_TOS, 128)
-		if err != nil {
-			utils.LOG.Print("set opt int failed", err)
-			return nil, err
-		}
+		if network == "tcp" {
+			err = syscall.SetsockoptInt(fd, syscall.IPPROTO_IP, syscall.IP_TOS, 128)
+			if err != nil {
+				utils.LOG.Print("set opt int failed", err)
+				return nil, err
+			}
 
-		err = syscall.Connect(fd, sa)
-		if err != nil {
-			utils.LOG.Print("connect failed:", err)
-			return nil, err
+			err = syscall.Connect(fd, sa)
+			if err != nil {
+				utils.LOG.Print("connect failed:", err)
+				return nil, err
+			}
 		}
 
 		file := os.NewFile(uintptr(fd), "")
@@ -79,10 +101,11 @@ func createclientsocket(host string, p SocketService) (net.Conn, error) {
 			utils.LOG.Print("convert to FileConn failed:", err)
 			return nil, err
 		}
+
 		init = true
 
 	} else {
-		outcon, err = net.Dial("tcp", host)
+		outcon, err = net.Dial(network, host)
 	}
 
 	return outcon, err
