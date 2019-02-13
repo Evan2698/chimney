@@ -86,12 +86,11 @@ func createclientsocket(host string, p SocketService, network string) (net.Conn,
 				utils.LOG.Print("set opt int failed", err)
 				return nil, err
 			}
-
-			err = syscall.Connect(fd, sa)
-			if err != nil {
-				utils.LOG.Print("connect failed:", err)
-				return nil, err
-			}
+		}
+		err = syscall.Connect(fd, sa)
+		if err != nil {
+			utils.LOG.Print("connect failed:", err)
+			return nil, err
 		}
 
 		file := os.NewFile(uintptr(fd), "")

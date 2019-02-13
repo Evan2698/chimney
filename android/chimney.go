@@ -21,6 +21,8 @@ var sockets ISocket
 
 var quit chan int
 
+var udpconn *net.UDPConn
+
 //Register ..
 func Register(v ISocket, k IDataFlow) {
 	flow = k
@@ -45,11 +47,26 @@ func StartChimney(s string,
 	}
 	quit = make(chan int, 1)
 	go core.Runclientsservice("127.0.0.1:1080", config, sockets, flow, quit)
+
+	var err error
+	go func() {
+		udpconn, err = core.SclientRoutine(config, sockets)
+		if err != nil {
+			utils.LOG.Println("ERROR! ERROR!")
+		}
+
+	}()
+
 	return true
 }
 
 // StopChimney ..
 func StopChimney() bool {
+
+	if udpconn != nil {
+		udpconn.Close()
+		udpconn = nil
+	}
 
 	if quit != nil {
 		utils.LOG.Println("stop stop stop stop stop")
