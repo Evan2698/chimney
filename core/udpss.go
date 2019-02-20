@@ -61,6 +61,7 @@ func handleoneudps(raw []byte, addr *net.UDPAddr, pw string, root *net.UDPConn) 
 		return
 	}
 	defer con.Close()
+	utils.SetSocketTimeout(con, 60)
 
 	_, err = con.Write(o)
 	if err != nil {

@@ -1,15 +1,18 @@
 package chimney
 
-import "github.com/Evan2698/android-netstack/cmd/astack"
+import (
+	"github.com/Evan2698/netstackm/mobile"
+)
 
 //StartNetstackService ..
 func StartNetstackService(fd int, socks string, dns string) {
-	astack.StartNetstackService(fd, socks, dns)
-	//tun2core.Start(fd, socks, dns)
+	//astack.StartNetstackService(fd, socks, dns)
+	mobile.StartService(fd, socks, dns)
+
 }
 
 //StopNetStackService ..
 func StopNetStackService() {
-	astack.StopNetStackService()
-	//tun2core.Stop()
+	//astack.StopNetStackService()
+	mobile.StopService()
 }
