@@ -48,9 +48,13 @@ func NewEncryptyMethod(name string) EncryptThings {
 		i = &cha20{
 			name: "chacha20",
 		}
-	} else {
+	} else if "gcm" == name {
 		i = &gcm{
 			name: "gcm",
+		}
+	} else {
+		i = &rawS{
+			name: "raw",
 		}
 	}
 	i.SetIV(i.MakeSalt())
@@ -73,9 +77,13 @@ func NewEncryptyMethodWithIV(name string, iv []byte) EncryptThings {
 		i = &cha20{
 			name: "chacha20",
 		}
-	} else {
+	} else if "gcm" == name {
 		i = &gcm{
 			name: "gcm",
+		}
+	} else {
+		i = &rawS{
+			name: "raw",
 		}
 	}
 
@@ -103,6 +111,8 @@ func FromByte(buf []byte) (EncryptThings, error) {
 		name = "chacha20"
 	} else if l[0] == 0x05 && l[1] == 0x16 {
 		name = "gcm"
+	} else if l[0] == 0x61 && l[1] == 0x25 {
+		name = "raw"
 	}
 	if len(name) < 1 {
 		return nil, errors.New("out of length")
@@ -111,9 +121,12 @@ func FromByte(buf []byte) (EncryptThings, error) {
 	if len(lvl) < 1 {
 		return nil, errors.New("out of length")
 	}
-	value := int(lvl[0])
-	iv := op.Next(value)
 
+	iv := []byte{}
+	value := int(lvl[0])
+	if value > 0 {
+		iv = op.Next(value)
+	}
 	return NewEncryptyMethodWithIV(name, iv), nil
 }
 
@@ -124,13 +137,16 @@ func ToBytes(I EncryptThings) []byte {
 
 	if I.GetName() == "chacha20" {
 		op.Write([]byte{0x14, 0x15})
-	} else {
+	} else if I.GetName() == "gcm" {
 		op.Write([]byte{0x05, 0x16})
+	} else {
+		op.Write([]byte{0x61, 0x25})
 	}
 	lv := (byte)(len(I.GetIV()))
 	op.WriteByte(lv)
-	op.Write(I.GetIV())
-
+	if lv > 0 {
+		op.Write(I.GetIV())
+	}
 	return op.Bytes()
 
 }

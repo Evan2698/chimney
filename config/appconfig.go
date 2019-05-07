@@ -16,6 +16,7 @@ type AppConfig struct {
 	Password     string `json:"password"`
 	Timeout      int    `json:"timeout"`
 	Server       string `json:"server"`
+	SSLRaw       bool   `json:"sslraw"`
 }
 
 // Parse ..
@@ -46,4 +47,5 @@ func DumpConfig(config *AppConfig) {
 	utils.LOG.Print("local_port :", config.LocalPort)
 	utils.LOG.Print("password :", config.Password)
 	utils.LOG.Print("timeout :", config.Timeout)
+	utils.LOG.Print("sslraw :", config.SSLRaw)
 }

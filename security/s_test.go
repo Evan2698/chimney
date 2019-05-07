@@ -6,7 +6,7 @@ import (
 
 func Test_KIL(t *testing.T) {
 
-	v := NewEncryptyMethod("chacha20")
+	v := NewEncryptyMethod("raw")
 	b := ToBytes(v)
 
 	t.Log(b)

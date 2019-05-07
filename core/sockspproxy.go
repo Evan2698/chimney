@@ -122,13 +122,18 @@ func (s *psocks) Connect(remoteaddr []byte) error {
 		return errors.New("connect response format incorrect")
 	}
 
+	utils.LOG.Print("connect result: ", ans)
+
 	if ans[1] != 0 {
-		utils.LOG.Print("connect failed code: ", hex.EncodeToString(ans))
-		return errors.New("connect failed")
+		if ans[1] != 0xEF {
+			utils.LOG.Print("connect failed code: ", hex.EncodeToString(ans))
+			return errors.New("connect failed")
+		}
+		I = security.NewEncryptyMethod("raw")
 	}
+	utils.LOG.Print("encryption name : " + I.GetName())
 	s.path.SetI(I)
 	return nil
-
 }
 
 //NewSocketProxy ...

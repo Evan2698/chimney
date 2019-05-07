@@ -227,8 +227,15 @@ func (s *socksreceive) handleServerResponse() error {
 	}
 	s.dst = remote
 	utils.SetSocketTimeout(s.dst, s.appcon.Timeout)
-	s.proxy.Write([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
-	s.proxy.SetEncrypt(I)
+	if 443 == port && s.appcon.SSLRaw {
+		s.proxy.Write([]byte{0x05, 0xEF, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
+		s.proxy.SetEncrypt(security.NewEncryptyMethod("raw"))
+		utils.LOG.Println("use 443 protocol for encryption.")
+	} else {
+		s.proxy.Write([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
+		s.proxy.SetEncrypt(I)
+		utils.LOG.Println("use normal protocol for encryption.")
+	}
 	return nil
 }
 
