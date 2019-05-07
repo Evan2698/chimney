@@ -6,5 +6,5 @@ import (
 
 func init() {
 	LOG = &mylog{}
-	log.SetOutput(setlogglobal())
+	log.SetOutput(setlogglobalnull())
 }
