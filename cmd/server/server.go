@@ -53,12 +53,16 @@ func main() {
 	host := net.JoinHostPort(config.Server, strconv.Itoa(int(config.ServerPort)))
 
 	go core.RunServerservice(host, config, nil, nil)
-	con, err := core.SServerRoutine(config)
-	if err != nil {
-		utils.LOG.Println("udp server failed", err)
-		os.Exit(1)
+
+	if !config.UseQuic {
+
+		con, err := core.SServerRoutine(config)
+		if err != nil {
+			utils.LOG.Println("udp server failed", err)
+			os.Exit(1)
+		}
+		defer con.Close()
 	}
-	defer con.Close()
 
 	waits()
 }
