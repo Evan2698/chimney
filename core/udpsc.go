@@ -52,14 +52,12 @@ func handles(conn *net.UDPConn, proxy string, pw string, p SocketService) {
 
 func handleoneudp(raw []byte, addr *net.UDPAddr, proxy string, pw string, root *net.UDPConn, p SocketService) {
 
-	con, err := createclientsocket(proxy, p, "udp")
+	con, err := CreateCommonSocket(proxy, "udp", 60, p) //createclientsocket(proxy, p, "udp")
 	if err != nil {
 		utils.LOG.Print("can not connect udp server", proxy)
 		return
 	}
 	defer con.Close()
-
-	utils.SetSocketTimeout(con, 60)
 
 	compressData, I, err := PackUDPData(pw, raw)
 	if err != nil {

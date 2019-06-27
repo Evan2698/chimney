@@ -44,6 +44,7 @@ func StartChimney(s string,
 		Server:       s,
 		Password:     pass,
 		Timeout:      30,
+		SSLRaw:       true,
 	}
 	quit = make(chan int, 1)
 	go core.Runclientsservice("127.0.0.1:1080", config, sockets, flow, quit)

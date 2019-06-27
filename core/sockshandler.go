@@ -5,6 +5,7 @@ import (
 	"crypto/hmac"
 	"encoding/binary"
 	"errors"
+	"io"
 	"net"
 	"strconv"
 	"strings"
@@ -24,19 +25,18 @@ const (
 
 type socksreceive struct {
 	proxy  SocksProxy
-	src    net.Conn
-	dst    net.Conn
+	src    io.ReadWriteCloser
+	dst    io.ReadWriteCloser
 	appcon *config.AppConfig
 }
 
 func (s *socksreceive) createproxy(app *config.AppConfig, p SocketService) (SocksProxy, error) {
-	proxyhost := net.JoinHostPort(app.Server, strconv.Itoa(int(app.ServerPort)))
-	con, err := createclientsocket(proxyhost, p, "tcp")
+	con, err := createclientsocket(p, "tcp", app)
 	if err != nil {
 		utils.LOG.Print("create socket failed", err)
 		return nil, err
 	}
-	utils.SetSocketTimeout(con, app.Timeout)
+
 	ss := NewSocksSocket(con, app.Password, nil)
 	proxysocket := NewSocketProxy(ss, app)
 
@@ -93,7 +93,7 @@ func (s *socksreceive) Receive(p SocketService) error {
 		if result == "CN" {
 			port := binary.BigEndian.Uint16(data[len(data)-2:])
 			host := net.JoinHostPort(ip.String(), strconv.Itoa(int(port)))
-			con, err := createclientsocket(host, p, "tcp")
+			con, err := CreateCommonSocket(host, "tcp", s.appcon.Timeout, p)
 			if err != nil {
 				s.src.Write([]byte{0x05, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 				utils.LOG.Print("it does not support this method.", err)
@@ -219,14 +219,13 @@ func (s *socksreceive) handleServerResponse() error {
 
 	utils.LOG.Println("server host: ", "|"+host)
 
-	remote, err := net.Dial("tcp", host)
+	remote, err := CreateCommonSocket(host, "tcp", s.appcon.Timeout, nil)
 	if err != nil {
 		s.proxy.Write([]byte{0x05, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 		utils.LOG.Print("socks format error", err)
 		return err
 	}
 	s.dst = remote
-	utils.SetSocketTimeout(s.dst, s.appcon.Timeout)
 	if 443 == port && s.appcon.SSLRaw {
 		s.proxy.Write([]byte{0x05, 0xEF, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 		s.proxy.SetEncrypt(security.NewEncryptyMethod("raw"))
@@ -276,7 +275,7 @@ func (s *socksreceive) Run(f DataFlow) {
 	utils.LOG.Print("one time is over!!!!!!")
 }
 
-func readrawfirst(raw net.Conn, proxy SocksProxy, ch chan int) {
+func readrawfirst(raw io.ReadWriteCloser, proxy SocksProxy, ch chan int) {
 
 	buf := make([]byte, bufsize)
 	var err error
@@ -300,7 +299,7 @@ func readrawfirst(raw net.Conn, proxy SocksProxy, ch chan int) {
 	utils.LOG.Print("END of readrawfirst: ", err)
 }
 
-func readproxyfirst(raw net.Conn, proxy SocksProxy, ch chan int) {
+func readproxyfirst(raw io.ReadWriteCloser, proxy SocksProxy, ch chan int) {
 	var err error
 	for {
 		pout, err := proxy.Read()

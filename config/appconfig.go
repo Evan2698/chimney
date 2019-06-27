@@ -17,6 +17,8 @@ type AppConfig struct {
 	Timeout      int    `json:"timeout"`
 	Server       string `json:"server"`
 	SSLRaw       bool   `json:"sslraw"`
+	UseQuic      bool   `json:"quic"`
+	QuicPort     int    `json:"quic_port"`
 }
 
 // Parse ..
@@ -48,4 +50,6 @@ func DumpConfig(config *AppConfig) {
 	utils.LOG.Print("password :", config.Password)
 	utils.LOG.Print("timeout :", config.Timeout)
 	utils.LOG.Print("sslraw :", config.SSLRaw)
+	utils.LOG.Print("UseQuic :", config.UseQuic)
+	utils.LOG.Print("QuicPort :", config.QuicPort)
 }

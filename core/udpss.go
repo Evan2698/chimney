@@ -55,13 +55,12 @@ func handleoneudps(raw []byte, addr *net.UDPAddr, pw string, root *net.UDPConn) 
 		return
 	}
 
-	con, err := createclientsocket(dest, nil, "udp")
+	con, err := CreateCommonSocket(dest, "udp", 60, nil) //createclientsocket(dest, nil, "udp")
 	if err != nil {
 		utils.LOG.Print("can not connect udp server", dest, err)
 		return
 	}
 	defer con.Close()
-	utils.SetSocketTimeout(con, 60)
 
 	_, err = con.Write(o)
 	if err != nil {

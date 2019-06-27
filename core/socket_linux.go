@@ -1,15 +1,49 @@
 package core
 
 import (
+	"crypto/tls"
 	"errors"
+	"io"
 	"net"
 	"os"
+	"strconv"
 	"syscall"
 
+	"github.com/Evan2698/chimney/config"
 	"github.com/Evan2698/chimney/utils"
+	quic "github.com/lucas-clemente/quic-go"
 )
 
-func createclientsocket(host string, p SocketService, network string) (net.Conn, error) {
+func createclientsocket(p SocketService, network string, app *config.AppConfig) (io.ReadWriteCloser, error) {
+	if app.UseQuic {
+		socketHost := net.JoinHostPort(app.Server, strconv.Itoa(int(app.QuicPort)))
+		session, err := quic.DialAddr(socketHost, &tls.Config{InsecureSkipVerify: true}, nil)
+		if err != nil {
+			utils.LOG.Print("create quick socket session failed", err)
+			return nil, err
+		}
+		stream, err := session.OpenStreamSync()
+		if err != nil {
+			session.Close()
+			utils.LOG.Print("create quick socket stream failed", err)
+			return nil, err
+		}
+		utils.LOG.Print("create socket(quic) socket success!")
+		out := SetQuickTimeout(session, stream, app.Timeout)
+		utils.LOG.Print("create socket(quic) socket success!2")
+
+		return out, nil
+
+	}
+
+	host := net.JoinHostPort(app.Server, strconv.Itoa(int(app.ServerPort)))
+	outcon, err := CreateCommonSocket(host, network, app.Timeout, p)
+	utils.LOG.Print("create as common socket!!")
+	return outcon, err
+}
+
+func CreateCommonSocket(host string, network string, timeout int, p SocketService) (net.Conn, error) {
+
 	var outcon net.Conn
 	var err error
 	var hostip net.IP
@@ -106,6 +140,7 @@ func createclientsocket(host string, p SocketService, network string) (net.Conn,
 	} else {
 		outcon, err = net.Dial(network, host)
 	}
-
+	utils.SetSocketTimeout(outcon, timeout)
 	return outcon, err
+
 }

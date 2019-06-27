@@ -1,8 +1,6 @@
 package chimney
 
-import (
-	"github.com/Evan2698/netstackm/mobile"
-)
+import "github.com/Evan2698/netstackm/mobile"
 
 //StartNetstackService ..
 func StartNetstackService(fd int, socks string, dns string) {
