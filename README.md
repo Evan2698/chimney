@@ -5,7 +5,7 @@ This is socks5 proxy with encryption, you can use it to access youtube etc.
 
 # Version
 
-[current] 0.4
+[current] 0.5
 
 1. support AES-gcm and ChaCha20
 2. base on socks5 protocol
