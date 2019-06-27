@@ -1,11 +1,11 @@
 {
     "server":"127.0.0.1",
     "server_port":9025,
-    "local_port":1080,
+    "local_port":9023,
     "local_address": "127.0.0.1",
     "password":"Evan$%#@!#$@!123",
     "timeout":600,
     "sslraw" : true,
     "quic" : true,
-    "quic_port" : 8443
+    "quic_port" : 443
 }
