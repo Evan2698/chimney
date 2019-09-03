@@ -3,7 +3,7 @@ package core
 import (
 	"testing"
 
-	"github.com/Evan2698/chimney/utils"
+	"chimney/utils"
 )
 
 func TestKOP(t *testing.T) {

@@ -2,9 +2,10 @@ package utils
 
 import (
 	"log"
+	"os"
 )
 
 func init() {
 	LOG = &mylog{}
-	log.SetOutput(setlogglobalnull())
+	log.SetOutput(os.Stdout)
 }

@@ -7,7 +7,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/Evan2698/chimney/utils"
+	"chimney/utils"
 )
 
 type gcm struct {

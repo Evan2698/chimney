@@ -6,8 +6,8 @@ import (
 	"encoding/binary"
 	"errors"
 
-	"github.com/Evan2698/chimney/security"
-	"github.com/Evan2698/chimney/utils"
+	"chimney/security"
+	"chimney/utils"
 )
 
 // TryparseUDPProtocol ...

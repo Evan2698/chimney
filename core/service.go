@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/tls"
@@ -12,11 +13,14 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Evan2698/chimney/utils"
+	"chimney/utils"
+
 	quic "github.com/lucas-clemente/quic-go"
 
-	"github.com/Evan2698/chimney/config"
+	"chimney/config"
 )
+
+const ProtocolName = "quic-chimney-what-why"
 
 // Runclientsservice ...
 func Runclientsservice(host string, app *config.AppConfig, p SocketService, f DataFlow, quit <-chan int) {
@@ -84,21 +88,30 @@ func generateTLSConfig() *tls.Config {
 	if err != nil {
 		panic(err)
 	}
-	return &tls.Config{Certificates: []tls.Certificate{tlsCert}}
+	return &tls.Config{
+		Certificates: []tls.Certificate{tlsCert},
+		NextProtos:   []string{ProtocolName},
+	}
 }
 
-func SetQuickTimeout(sess quic.Session, stream quic.Stream, tm int) CReadWriteCloser {
-	readTimeout := time.Duration(tm) * time.Second
-	v := time.Now().Add(readTimeout)
-	stream.SetReadDeadline(v)
-	stream.SetWriteDeadline(v)
-	stream.SetDeadline(v)
+func makeQuicSocket(sess quic.Session, stream quic.Stream) *CStream {
 	ct := &CStream{
 		MainStream: stream,
 		Hold:       sess,
 	}
-
 	return ct
+}
+
+func (socket *CStream) setQuickTimeout(tm int) CReadWriteCloser {
+	readTimeout := time.Duration(tm) * time.Second
+	v := time.Now().Add(readTimeout)
+	stream, ok := socket.MainStream.(quic.Stream)
+	if ok {
+		stream.SetReadDeadline(v)
+		stream.SetWriteDeadline(v)
+		stream.SetDeadline(v)
+	}
+	return socket
 }
 
 // RunServerservice ..
@@ -113,18 +126,18 @@ func RunServerservice(host string, app *config.AppConfig, p SocketService, f Dat
 		}
 
 		for {
-			sess, err := listener.Accept()
+			sess, err := listener.Accept(context.Background())
 			if err != nil {
 				utils.LOG.Print("quic accept session failed ", host, err)
 				return
 			}
-			stream, err := sess.AcceptStream()
+			stream, err := sess.AcceptStream(context.Background())
 			if err != nil {
 				sess.Close()
 				utils.LOG.Print("quic accept stream failed", host, err)
 				break
 			}
-			quick := SetQuickTimeout(sess, stream, app.Timeout)
+			quick := makeQuicSocket(sess, stream).setQuickTimeout(app.Timeout)
 			go handServeronesocket(quick, app, p, f)
 
 		}

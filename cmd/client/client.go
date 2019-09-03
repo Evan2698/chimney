@@ -11,9 +11,9 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/Evan2698/chimney/config"
-	"github.com/Evan2698/chimney/core"
-	"github.com/Evan2698/chimney/utils"
+	"chimney/config"
+	"chimney/core"
+	"chimney/utils"
 )
 
 func main() {

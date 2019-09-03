@@ -10,12 +10,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Evan2698/chimney/geo"
-	"github.com/Evan2698/chimney/utils"
+	"chimney/geo"
+	"chimney/utils"
 
-	"github.com/Evan2698/chimney/security"
+	"chimney/security"
 
-	"github.com/Evan2698/chimney/config"
+	"chimney/config"
 )
 
 const (

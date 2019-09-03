@@ -4,11 +4,11 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/Evan2698/chimney/security"
+	"chimney/security"
 
-	"github.com/Evan2698/chimney/utils"
+	"chimney/utils"
 
-	"github.com/Evan2698/chimney/config"
+	"chimney/config"
 )
 
 func SclientRoutine(app *config.AppConfig, p SocketService) (*net.UDPConn, error) {

@@ -11,11 +11,11 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/Evan2698/chimney/utils"
+	"chimney/utils"
 
-	"github.com/Evan2698/chimney/core"
+	"chimney/core"
 
-	"github.com/Evan2698/chimney/config"
+	"chimney/config"
 )
 
 func main() {

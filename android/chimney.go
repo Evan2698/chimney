@@ -4,10 +4,10 @@ import (
 	"net"
 	"time"
 
-	"github.com/Evan2698/chimney/core"
-	"github.com/Evan2698/chimney/utils"
+	"chimney/core"
+	"chimney/utils"
 
-	"github.com/Evan2698/chimney/config"
+	"chimney/config"
 )
 
 //ISocket ...

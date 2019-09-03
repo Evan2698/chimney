@@ -1,7 +1,7 @@
 package core
 
 import (
-	"github.com/Evan2698/chimney/security"
+	"chimney/security"
 )
 
 // SocketService ...
