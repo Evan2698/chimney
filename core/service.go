@@ -74,19 +74,22 @@ func handclientonesocket(o net.Conn, app *config.AppConfig, p SocketService, f D
 func generateTLSConfig() *tls.Config {
 	key, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
-		panic(err)
+		utils.LOG.Print(err)
+		return nil
 	}
 	template := x509.Certificate{SerialNumber: big.NewInt(1)}
 	certDER, err := x509.CreateCertificate(rand.Reader, &template, &template, &key.PublicKey, key)
 	if err != nil {
-		panic(err)
+		utils.LOG.Print(err)
+		return nil
 	}
 	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(key)})
 	certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER})
 
 	tlsCert, err := tls.X509KeyPair(certPEM, keyPEM)
 	if err != nil {
-		panic(err)
+		utils.LOG.Print(err)
+		return nil
 	}
 	return &tls.Config{
 		Certificates: []tls.Certificate{tlsCert},
@@ -129,17 +132,9 @@ func RunServerservice(host string, app *config.AppConfig, p SocketService, f Dat
 			sess, err := listener.Accept(context.Background())
 			if err != nil {
 				utils.LOG.Print("quic accept session failed ", host, err)
-				return
-			}
-			stream, err := sess.AcceptStream(context.Background())
-			if err != nil {
-				sess.Close()
-				utils.LOG.Print("quic accept stream failed", host, err)
 				break
 			}
-			quick := makeQuicSocket(sess, stream).setQuickTimeout(app.Timeout)
-			go handServeronesocket(quick, app, p, f)
-
+			go handleQuicSession(sess, app, p, f)
 		}
 
 	} else {
@@ -158,6 +153,26 @@ func RunServerservice(host string, app *config.AppConfig, p SocketService, f Dat
 			utils.SetSocketTimeout(someone, app.Timeout)
 			go handServeronesocket(someone, app, p, f)
 		}
+	}
+}
+
+func handleQuicSession(section quic.Session, app *config.AppConfig, p SocketService, f DataFlow) {
+
+	defer func(s quic.Session) {
+		if s != nil {
+			s.Close()
+		}
+		utils.LOG.Print("quic session closed!!")
+	}(section)
+
+	for {
+		stream, err := section.AcceptStream(context.Background())
+		if err != nil {
+			utils.LOG.Print("quic accept stream failed", section.LocalAddr().String())
+			break
+		}
+		quick := makeQuicSocket(nil, stream).setQuickTimeout(app.Timeout)
+		go handServeronesocket(quick, app, p, f)
 	}
 }
 
