@@ -1,7 +1,10 @@
 package core
 
 import (
+	"chimney/config"
+	"chimney/utils"
 	"net"
+	"strconv"
 )
 
 func createclientsocket(p SocketService, network string, app *config.AppConfig) (net.Conn, error) {
@@ -11,9 +14,9 @@ func createclientsocket(p SocketService, network string, app *config.AppConfig) 
 	return outcon, err
 }
 
-func CreateCommonSocket(host string, network string, timeout int, p SocketService) (net.Conn, error) {
+func CreateCommonSocket(host string, network string, timeout uint32, p SocketService) (net.Conn, error) {
 	outcon, err := net.Dial(network, host)
-	if err == nil{
+	if err == nil {
 		utils.SetSocketTimeout(outcon, timeout)
 	}
 

@@ -219,7 +219,7 @@ func (s *socksreceive) handleServerResponse() error {
 
 	utils.LOG.Println("server host: ", "|"+host)
 
-	remote, err := CreateCommonSocket(host, "tcp", uint32(s.appcon.Timeout), nil)
+	remote, err := CreateCommonSocket(host, "tcp", s.appcon.Timeout, nil)
 	if err != nil {
 		s.proxy.Write([]byte{0x05, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 		utils.LOG.Print("socks format error", err)

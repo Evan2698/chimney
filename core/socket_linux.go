@@ -148,7 +148,7 @@ func CreateCommonSocket(host string, network string, timeout uint32, p SocketSer
 	} else {
 		outcon, err = net.Dial(network, host)
 	}
-	utils.SetSocketTimeout(outcon, uint32(timeout))
+	utils.SetSocketTimeout(outcon, timeout)
 	return outcon, err
 
 }

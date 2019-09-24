@@ -150,7 +150,7 @@ func RunServerservice(host string, app *config.AppConfig, p SocketService, f Dat
 				utils.LOG.Print("remote socket failed to open", err)
 				break
 			}
-			utils.SetSocketTimeout(someone, uint32(app.Timeout))
+			utils.SetSocketTimeout(someone, app.Timeout)
 			go handServeronesocket(someone, app, p, f)
 		}
 	}
