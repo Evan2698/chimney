@@ -19,7 +19,7 @@ type IDataFlow core.DataFlow
 var flow IDataFlow
 var sockets ISocket
 
-var quit chan int
+var quit chan int32
 
 var udpconn *net.UDPConn
 
@@ -31,9 +31,9 @@ func Register(v ISocket, k IDataFlow) {
 
 // StartChimney ..
 func StartChimney(s string,
-	sport int,
+	sport uint16,
 	l string,
-	lport int,
+	lport uint16,
 	pass string,
 	path string) bool {
 
@@ -48,7 +48,7 @@ func StartChimney(s string,
 		QuicPort:     443,
 		UseQuic:      false,
 	}
-	quit = make(chan int, 1)
+	quit = make(chan int32, 1)
 	go core.Runclientsservice("127.0.0.1:1080", config, sockets, flow, quit)
 
 	var err error

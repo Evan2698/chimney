@@ -73,7 +73,7 @@ func (s *sockssocket) Write(p []byte) error {
 
 	var fo bytes.Buffer
 	n := len(input)
-	l := utils.Int2Bytes(n)
+	l := utils.Int2Bytes(uint32(n))
 	fo.Write(l)
 	fo.Write(input)
 	_, err = s.origin.Write(fo.Bytes())
@@ -93,20 +93,20 @@ func (s *sockssocket) SetI(i security.EncryptThings) {
 	s.I = i
 }
 
-func (s *sockssocket) readbytesfromraw(bytes int) ([]byte, error) {
+func (s *sockssocket) readbytesfromraw(bytes uint32) ([]byte, error) {
 
 	if bytes <= 0 {
 		return nil, errors.New("0 bytes can not read! ")
 	}
 
 	buf := make([]byte, bytes)
-	index := 0
+	var index uint32
 	var err error
 	var n int
 	for {
 		n, err = s.origin.Read(buf[index:])
 		utils.LOG.Println("read from socket size: ", n, err)
-		index = index + n
+		index = index + uint32(n)
 		if err != nil {
 			utils.LOG.Println("error on read_bytes_from_socket ", n, err)
 			break

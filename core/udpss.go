@@ -12,7 +12,7 @@ import (
 
 func SServerRoutine(app *config.AppConfig) (*net.UDPConn, error) {
 
-	host := net.JoinHostPort(app.Server, strconv.Itoa(app.ServerPort))
+	host := net.JoinHostPort(app.Server, strconv.Itoa(int(app.ServerPort)))
 
 	udpaddr, err := net.ResolveUDPAddr("udp", host)
 	if err != nil {

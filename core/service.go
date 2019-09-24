@@ -20,10 +20,10 @@ import (
 	"chimney/config"
 )
 
-const ProtocolName = "quic-chimney-what-why"
+const protocolName = "quic-chimney-what-why"
 
 // Runclientsservice ...
-func Runclientsservice(host string, app *config.AppConfig, p SocketService, f DataFlow, quit <-chan int) {
+func Runclientsservice(host string, app *config.AppConfig, p SocketService, f DataFlow, quit <-chan int32) {
 	all, err := net.Listen("tcp", host)
 	if err != nil {
 		utils.LOG.Print("local listen on   ip =", host, err)
@@ -59,7 +59,7 @@ func Runclientsservice(host string, app *config.AppConfig, p SocketService, f Da
 
 func handclientonesocket(o net.Conn, app *config.AppConfig, p SocketService, f DataFlow) {
 
-	utils.SetSocketTimeout(o, app.Timeout)
+	utils.SetSocketTimeout(o, uint32(app.Timeout))
 	h := NewSocksHandler(o, nil, app)
 	defer h.Close()
 
@@ -93,7 +93,7 @@ func generateTLSConfig() *tls.Config {
 	}
 	return &tls.Config{
 		Certificates: []tls.Certificate{tlsCert},
-		NextProtos:   []string{ProtocolName},
+		NextProtos:   []string{protocolName},
 	}
 }
 
@@ -105,7 +105,7 @@ func makeQuicSocket(sess quic.Session, stream quic.Stream) *CStream {
 	return ct
 }
 
-func (socket *CStream) setQuickTimeout(tm int) CReadWriteCloser {
+func (socket *CStream) setQuickTimeout(tm uint32) CReadWriteCloser {
 	readTimeout := time.Duration(tm) * time.Second
 	v := time.Now().Add(readTimeout)
 	stream, ok := socket.MainStream.(quic.Stream)
@@ -150,7 +150,7 @@ func RunServerservice(host string, app *config.AppConfig, p SocketService, f Dat
 				utils.LOG.Print("remote socket failed to open", err)
 				break
 			}
-			utils.SetSocketTimeout(someone, app.Timeout)
+			utils.SetSocketTimeout(someone, uint32(app.Timeout))
 			go handServeronesocket(someone, app, p, f)
 		}
 	}

@@ -22,7 +22,7 @@ func createclientsocket(p SocketService, network string, app *config.AppConfig) 
 		socketHost := net.JoinHostPort(app.Server, strconv.Itoa(int(app.QuicPort)))
 		tlsConf := &tls.Config{
 			InsecureSkipVerify: true,
-			NextProtos:         []string{ProtocolName},
+			NextProtos:         []string{protocolName},
 		}
 
 		session, err := quic.DialAddr(socketHost, tlsConf, nil)
@@ -44,13 +44,13 @@ func createclientsocket(p SocketService, network string, app *config.AppConfig) 
 	}
 
 	host := net.JoinHostPort(app.Server, strconv.Itoa(int(app.ServerPort)))
-	outcon, err := CreateCommonSocket(host, network, app.Timeout, p)
+	outcon, err := CreateCommonSocket(host, network, uint32(app.Timeout), p)
 	utils.LOG.Print("create as common socket!!")
 	return outcon, err
 }
 
 // CreateCommonSocket ...
-func CreateCommonSocket(host string, network string, timeout int, p SocketService) (net.Conn, error) {
+func CreateCommonSocket(host string, network string, timeout uint32, p SocketService) (net.Conn, error) {
 
 	var outcon net.Conn
 	var err error
@@ -148,7 +148,7 @@ func CreateCommonSocket(host string, network string, timeout int, p SocketServic
 	} else {
 		outcon, err = net.Dial(network, host)
 	}
-	utils.SetSocketTimeout(outcon, timeout)
+	utils.SetSocketTimeout(outcon, uint32(timeout))
 	return outcon, err
 
 }

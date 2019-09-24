@@ -6,7 +6,7 @@ import (
 )
 
 //SetSocketTimeout ..
-func SetSocketTimeout(con net.Conn, tm int) {
+func SetSocketTimeout(con net.Conn, tm uint32) {
 	if con != nil && tm != 0 {
 		readTimeout := time.Duration(tm) * time.Second
 		v := time.Now().Add(readTimeout)

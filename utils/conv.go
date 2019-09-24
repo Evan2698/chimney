@@ -6,17 +6,17 @@ import (
 )
 
 //Int2Bytes ...
-func Int2Bytes(n int) []byte {
-	u := int32(n)
+func Int2Bytes(n uint32) []byte {
+	u := uint32(n)
 	var hello bytes.Buffer
 	binary.Write(&hello, binary.BigEndian, u)
 	return hello.Bytes()
 }
 
 //Bytes2Int ...
-func Bytes2Int(b []byte) int {
+func Bytes2Int(b []byte) uint32 {
 	bytesBuffer := bytes.NewBuffer(b)
-	var tmp int32
+	var tmp uint32
 	binary.Read(bytesBuffer, binary.BigEndian, &tmp)
-	return int(tmp)
+	return tmp
 }

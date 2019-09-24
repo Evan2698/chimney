@@ -4,12 +4,16 @@ import (
 	"fmt"
 	"net"
 
+	"chimney/config"
 	"chimney/security"
 
 	"chimney/core"
 )
 
 func main() {
+	config, err := config.Parse("../../config.json")
+	fmt.Print(config)
+
 	con, err := net.Dial("tcp", "127.0.0.1:5000")
 	if err != nil {
 		fmt.Print("connect failed!")

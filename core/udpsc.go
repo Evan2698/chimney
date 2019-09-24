@@ -11,9 +11,10 @@ import (
 	"chimney/config"
 )
 
+//SclientRoutine for client
 func SclientRoutine(app *config.AppConfig, p SocketService) (*net.UDPConn, error) {
 
-	host := net.JoinHostPort(app.LocalAddress, strconv.Itoa(app.LocalPort))
+	host := net.JoinHostPort(app.LocalAddress, strconv.Itoa(int(app.LocalPort)))
 
 	udpaddr, err := net.ResolveUDPAddr("udp", host)
 	if err != nil {
@@ -27,7 +28,7 @@ func SclientRoutine(app *config.AppConfig, p SocketService) (*net.UDPConn, error
 		return nil, err
 	}
 
-	proxyhost := net.JoinHostPort(app.Server, strconv.Itoa(app.ServerPort))
+	proxyhost := net.JoinHostPort(app.Server, strconv.Itoa(int(app.ServerPort)))
 
 	go handles(conn, proxyhost, app.Password, p)
 

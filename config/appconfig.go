@@ -10,15 +10,15 @@ import (
 
 // AppConfig ..
 type AppConfig struct {
-	ServerPort   int    `json:"server_port"`
-	LocalPort    int    `json:"local_port"`
+	ServerPort   uint16 `json:"server_port"`
+	LocalPort    uint16 `json:"local_port"`
 	LocalAddress string `json:"local_address"`
 	Password     string `json:"password"`
-	Timeout      int    `json:"timeout"`
+	Timeout      uint32 `json:"timeout"`
 	Server       string `json:"server"`
 	SSLRaw       bool   `json:"sslraw"`
 	UseQuic      bool   `json:"quic"`
-	QuicPort     int    `json:"quic_port"`
+	QuicPort     uint16 `json:"quic_port"`
 }
 
 // Parse ..
