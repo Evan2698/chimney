@@ -44,7 +44,7 @@ func createclientsocket(p SocketService, network string, app *config.AppConfig) 
 	}
 
 	host := net.JoinHostPort(app.Server, strconv.Itoa(int(app.ServerPort)))
-	outcon, err := CreateCommonSocket(host, network, uint32(app.Timeout), p)
+	outcon, err := CreateCommonSocket(host, network, app.Timeout, p)
 	utils.LOG.Print("create as common socket!!")
 	return outcon, err
 }
