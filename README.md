@@ -1,34 +1,36 @@
-# Chimney
+#Chimney
 
-This is socks5 proxy with encryption, you can use it to access youtube etc.
-
-
-# Version
-
-[current] 0.5
-
-1. support AES-gcm and ChaCha20
-2. base on socks5 protocol
-3. user config.json to set up the user parameter
-
-
-**Note you have to have the vps or vm(except china).**
-
-
-# How to build
-change folder to src, then
-
-
-1. go get github.com/Evan2698/chimney/cmd/client **or**  go get github.com/Evan2698/chimney/cmd/server
-2. go build github.com/Evan2698/chimney/cmd/client
-3. go build github.com/Evan2698/chimney/cmd/server
+Chimney is a component for vpn. on PCs(windows & linux), server & client communicate with socks5 protocol,It is a separate configurable executable program. It can communicate through configuration and quic protocol, which is fast and simple to configure.
+On Android, it is just a aar component for vpn(just socks 5). 
 
 
 
-## License
+# Summary
 
+- [HowToBuild](#HowToBuild "HowToBuild")
+- [AboutUs](#AboutUs "AboutUs")
+- [License](#License "License")
+
+# HowToBuild
+ 
+   ### Build PC's executable
+-   go get github.com/Evan2698/chimney/cmd/client **or**  go get github.com/Evan2698/chimney/cmd/server
+-   go build github.com/Evan2698/chimney/cmd/client
+-   go build github.com/Evan2698/chimney/cmd/server
+-  modify the config.json and put it in the same directory with executable.
+
+  ### Build android component
+  build command:
+  - prepare gomobile and quic.
+  - gomobile bind -target=android  -ldflags="-s -w" github.com/Evan2698/chimney/android 
+
+  BTW:  If quic fails to compile, you can modify it to compile. Quic protocol is not supported on Android.
+
+# About
+ ☺ ☺ ☺ ☺ ☺ 
+
+# License
+```
 And of course:
 
 MIT: https://opensource.org/licenses/MIT
-
-
