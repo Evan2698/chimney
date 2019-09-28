@@ -1,4 +1,4 @@
-package android
+package tun4android
 
 import "github.com/Evan2698/chimney/lwip2socks/mobile"
 

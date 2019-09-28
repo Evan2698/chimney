@@ -1,4 +1,4 @@
-package android
+package tun4android
 
 import (
 	"net"
