@@ -8,7 +8,7 @@ On Android, it is just a component(AAR package) for vpn.
 # Summary
 
 - [HowToBuild](#HowToBuild "HowToBuild")
-- [AboutUs](#AboutUs "AboutUs")
+- [About](#About "About")
 - [License](#License "License")
 
 # HowToBuild
