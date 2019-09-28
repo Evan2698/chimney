@@ -32,15 +32,15 @@ func Register(v ISocket, k IDataFlow) {
 
 // StartChimney ..
 func StartChimney(s string,
-	sport uint16,
+	sport int,
 	l string,
-	lport uint16,
+	lport int,
 	pass string,
 	path string) bool {
 
 	config := &config.AppConfig{
-		ServerPort:   sport,
-		LocalPort:    lport,
+		ServerPort:   uint16(sport),
+		LocalPort:    uint16(lport),
 		LocalAddress: l,
 		Server:       s,
 		Password:     pass,
