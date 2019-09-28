@@ -1,8 +1,8 @@
-#Chimney
+# Chimney
 
 Chimney is a component for vpn. on PCs(windows & linux), server & client communicate with socks5 protocol,It is a separate configurable executable program. It can communicate through configuration and quic protocol, which is fast and simple to configure.
-On Android, it is just a aar component for vpn(just socks 5). 
 
+On Android, it is just a component(AAR package) for vpn.
 
 
 # Summary
