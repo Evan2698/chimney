@@ -1,6 +1,6 @@
-package chimney
+package android
 
-import "lwip2socks/mobile"
+import "github.com/Evan2698/chimney/lwip2socks/mobile"
 
 //StartNetstackService ..
 func StartNetstackService(fd int, socks string, dns string) {

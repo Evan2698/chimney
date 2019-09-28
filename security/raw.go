@@ -3,7 +3,7 @@ package security
 import (
 	"time"
 
-	"chimney/utils"
+	"github.com/Evan2698/chimney/utils"
 )
 
 type rawS struct {

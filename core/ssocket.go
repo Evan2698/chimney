@@ -5,9 +5,9 @@ import (
 	"errors"
 	"io"
 
-	"chimney/utils"
+	"github.com/Evan2698/chimney/utils"
 
-	"chimney/security"
+	"github.com/Evan2698/chimney/security"
 )
 
 const (

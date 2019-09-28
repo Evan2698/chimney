@@ -10,9 +10,9 @@ import (
 	"strconv"
 	"syscall"
 
-	"chimney/config"
+	"github.com/Evan2698/chimney/config"
 
-	"chimney/utils"
+	"github.com/Evan2698/chimney/utils"
 
 	quic "github.com/lucas-clemente/quic-go"
 )

@@ -1,13 +1,14 @@
-package chimney
+package android
 
 import (
 	"net"
 	"time"
 
-	"chimney/core"
-	"chimney/utils"
+	"github.com/Evan2698/chimney/utils"
 
-	"chimney/config"
+	"github.com/Evan2698/chimney/core"
+
+	"github.com/Evan2698/chimney/config"
 )
 
 //ISocket ...

@@ -1,10 +1,12 @@
 package core
 
 import (
-	"chimney/config"
-	"chimney/utils"
 	"net"
 	"strconv"
+
+	"github.com/Evan2698/chimney/utils"
+
+	"github.com/Evan2698/chimney/config"
 )
 
 func createclientsocket(p SocketService, network string, app *config.AppConfig) (net.Conn, error) {

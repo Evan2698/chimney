@@ -6,9 +6,9 @@ import (
 	"io"
 	"time"
 
-	"chimney/security/chacha20"
+	"github.com/Evan2698/chimney/security/chacha20"
 
-	"chimney/utils"
+	"github.com/Evan2698/chimney/utils"
 )
 
 type cha20 struct {

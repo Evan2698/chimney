@@ -6,11 +6,11 @@ import (
 	"errors"
 	"net"
 
-	"chimney/utils"
+	"github.com/Evan2698/chimney/utils"
 
-	"chimney/security"
+	"github.com/Evan2698/chimney/security"
 
-	"chimney/config"
+	"github.com/Evan2698/chimney/config"
 )
 
 type psocks struct {

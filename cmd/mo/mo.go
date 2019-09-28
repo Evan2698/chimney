@@ -1,6 +1,6 @@
 package main
 
-import "chimney/android"
+import "github.com/Evan2698/chimney/android"
 
 func main() {
 

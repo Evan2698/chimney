@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"net"
 
-	"chimney/config"
-	"chimney/security"
+	"github.com/Evan2698/chimney/security"
 
-	"chimney/core"
+	"github.com/Evan2698/chimney/config"
+
+	"github.com/Evan2698/chimney/core"
 )
 
 func main() {

@@ -4,11 +4,11 @@ import (
 	"net"
 	"strconv"
 
-	"chimney/security"
+	"github.com/Evan2698/chimney/security"
 
-	"chimney/utils"
+	"github.com/Evan2698/chimney/utils"
 
-	"chimney/config"
+	"github.com/Evan2698/chimney/config"
 )
 
 //SclientRoutine for client

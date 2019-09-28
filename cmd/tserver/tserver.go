@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net"
 
-	"chimney/security"
+	"github.com/Evan2698/chimney/security"
 
-	"chimney/core"
+	"github.com/Evan2698/chimney/core"
 )
 
 func main() {

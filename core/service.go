@@ -13,11 +13,11 @@ import (
 	"strconv"
 	"time"
 
-	"chimney/utils"
+	"github.com/Evan2698/chimney/utils"
 
 	quic "github.com/lucas-clemente/quic-go"
 
-	"chimney/config"
+	"github.com/Evan2698/chimney/config"
 )
 
 const protocolName = "quic-chimney-what-why"

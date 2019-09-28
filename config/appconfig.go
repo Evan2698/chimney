@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"chimney/utils"
+	"github.com/Evan2698/chimney/utils"
 )
 
 // AppConfig ..
