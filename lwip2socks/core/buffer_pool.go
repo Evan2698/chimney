@@ -6,7 +6,7 @@ import (
 
 var pool *sync.Pool
 
-const BufSize = 2 * 1024
+const BufSize = 3 * 1024
 
 func SetBufferPool(p *sync.Pool) {
 	pool = p
