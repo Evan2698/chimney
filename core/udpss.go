@@ -11,6 +11,8 @@ import (
 	"github.com/Evan2698/chimney/config"
 )
 
+const buffersize = 4096
+
 func SServerRoutine(app *config.AppConfig) (*net.UDPConn, error) {
 
 	host := net.JoinHostPort(app.Server, strconv.Itoa(int(app.ServerPort)))
@@ -37,7 +39,7 @@ func handlesServer(conn *net.UDPConn, pw string) {
 	defer conn.Close()
 
 	for {
-		buf := make([]byte, 4096)
+		buf := make([]byte, buffersize)
 		n, readdr, err := conn.ReadFromUDP(buf)
 		if err != nil {
 			utils.LOG.Println("udp read failed!!!!!")
@@ -68,7 +70,7 @@ func handleoneudps(raw []byte, addr *net.UDPAddr, pw string, root *net.UDPConn) 
 		utils.LOG.Print("write udp server error!", err)
 		return
 	}
-	var buf [4096]byte
+	var buf [buffersize]byte
 	n, err := con.Read(buf[:])
 	if err != nil {
 		utils.LOG.Print("read from server error", err)

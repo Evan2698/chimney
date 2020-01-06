@@ -1,11 +1,11 @@
 package mobile
 
 import (
-	"io"
-	"log"
 	"github.com/Evan2698/chimney/lwip2socks/common/dns/cache"
 	"github.com/Evan2698/chimney/lwip2socks/core"
 	"github.com/Evan2698/chimney/lwip2socks/proxy/socks"
+	"io"
+	"log"
 	"os"
 	"time"
 )
@@ -21,7 +21,7 @@ func StartService(fd int, proxy string, dns string) bool {
 	tun = os.NewFile(uintptr(fd), "")
 
 	core.RegisterTCPConnHandler(socks.NewTCPHandler("127.0.0.1", 1080))
-	core.RegisterUDPConnHandler(socks.NewUDPHandler("127.0.0.1", 1080, 120, dnsCache))
+	core.RegisterUDPConnHandler(socks.NewUDPHandler("127.0.0.1", 1080, 180*time.Second, dnsCache))
 
 	core.RegisterOutputFn(func(data []byte) (int, error) {
 		return tun.Write(data)

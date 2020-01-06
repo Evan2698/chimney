@@ -40,7 +40,7 @@ func handles(conn *net.UDPConn, proxy string, pw string, p SocketService) {
 	defer conn.Close()
 
 	for {
-		buf := make([]byte, 4096)
+		buf := make([]byte, buffersize)
 		n, readdr, err := conn.ReadFromUDP(buf)
 		if err != nil {
 			utils.LOG.Println("udp read failed!!!!!")
@@ -71,7 +71,7 @@ func handleoneudp(raw []byte, addr *net.UDPAddr, proxy string, pw string, root *
 		utils.LOG.Print("write udp server error!", err)
 		return
 	}
-	var buf [4096]byte
+	var buf [buffersize]byte
 	n, err := con.Read(buf[:])
 	if err != nil {
 		utils.LOG.Print("read from server error", err)

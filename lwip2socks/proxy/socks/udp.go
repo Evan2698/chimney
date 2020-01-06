@@ -5,10 +5,10 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"log"
 	"github.com/Evan2698/chimney/lwip2socks/common/dns"
 	"github.com/Evan2698/chimney/lwip2socks/common/dns/cache"
 	"github.com/Evan2698/chimney/lwip2socks/core"
+	"log"
 	"net"
 	"strconv"
 	"sync"
@@ -18,11 +18,10 @@ import (
 type udpHandler struct {
 	sync.Mutex
 
-	proxyHost   string
-	proxyPort   uint16
-	remoteAddrs map[core.UDPConn]*net.UDPAddr // UDP relay server addresses
-	udpSocks    map[core.UDPConn]net.Conn
-	timeout     time.Duration
+	proxyHost string
+	proxyPort uint16
+	udpSocks  map[core.UDPConn]net.Conn
+	timeout   time.Duration
 
 	dnsCache *cache.DNSCache
 }
@@ -30,17 +29,16 @@ type udpHandler struct {
 // NewUDPHandler ...
 func NewUDPHandler(proxyHost string, proxyPort uint16, timeout time.Duration, dnsCache *cache.DNSCache) core.UDPConnHandler {
 	return &udpHandler{
-		proxyHost:   proxyHost,
-		proxyPort:   proxyPort,
-		dnsCache:    dnsCache,
-		timeout:     timeout,
-		remoteAddrs: make(map[core.UDPConn]*net.UDPAddr, 8),
-		udpSocks:    make(map[core.UDPConn]net.Conn, 8),
+		proxyHost: proxyHost,
+		proxyPort: proxyPort,
+		dnsCache:  dnsCache,
+		timeout:   timeout,
+		udpSocks:  make(map[core.UDPConn]net.Conn, 8),
 	}
 }
 
-func settimeout(con net.Conn, second int) {
-	readTimeout := time.Duration(second) * time.Second
+func settimeout(con net.Conn, second time.Duration) {
+	readTimeout := second
 	v := time.Now().Add(readTimeout)
 	con.SetReadDeadline(v)
 	con.SetWriteDeadline(v)
@@ -50,17 +48,11 @@ func settimeout(con net.Conn, second int) {
 //Connect ...
 func (h *udpHandler) Connect(conn core.UDPConn, target *net.UDPAddr) error {
 	dest := net.JoinHostPort(h.proxyHost, strconv.Itoa(int(h.proxyPort)))
-	netcc, err := net.Dial("udp", dest)
-	if err != nil {
-		conn.Close()
+	remoteCon, err := net.Dial("udp", dest)
+	if err != nil || target == nil {
+		h.Close(conn)
 		log.Println("socks connect failed:", err, dest)
 		return err
-	}
-
-	if target != nil {
-		h.Lock()
-		h.remoteAddrs[conn] = target
-		h.Unlock()
 	}
 
 	h.Lock()
@@ -69,48 +61,39 @@ func (h *udpHandler) Connect(conn core.UDPConn, target *net.UDPAddr) error {
 		v.Close()
 		delete(h.udpSocks, conn)
 	}
-	h.udpSocks[conn] = netcc
+	h.udpSocks[conn] = remoteCon
 	h.Unlock()
 
-	settimeout(netcc, 120) // set timeout
+	settimeout(remoteCon, h.timeout) // set timeout
 
-	go h.fetchSocksData(conn)
+	go h.fetchSocksData(conn, remoteCon, target)
 
 	return nil
 }
 
-func (h *udpHandler) fetchSocksData(conn core.UDPConn) {
+func (h *udpHandler) fetchSocksData(conn core.UDPConn, remoteConn net.Conn, target *net.UDPAddr) {
 	buf := core.NewBytes(core.BufSize)
 	defer func() {
 		core.FreeBytes(buf)
 		h.Close(conn)
 	}()
+	for {
+		n, err := remoteConn.Read(buf)
+		if err != nil {
+			log.Println(err, "read from socks failed")
+			return
+		}
 
-	h.Lock()
-	netcc, ok := h.udpSocks[conn]
-	newTarget, ok0 := h.remoteAddrs[conn]
-	h.Unlock()
-	if !ok {
-		log.Println("can not find socks <-->", conn.LocalAddr().String())
-		return
+		raw := buf[:n]
+		n, err = conn.WriteFrom(raw, target)
+		if err != nil {
+			log.Println(err, "write tun failed!!")
+			return
+		}
+		if target.Port == dns.COMMON_DNS_PORT {
+			h.dnsCache.Store(raw)
+		}
 	}
-	if !ok0 {
-		log.Println("can not remote address <-->", conn.LocalAddr().String())
-		return
-	}
-
-	n, err := netcc.Read(buf)
-	if err != nil {
-		log.Println(err, "read from socks failed")
-		return
-	}
-
-	raw := buf[:n]
-	conn.WriteFrom(raw, newTarget)
-	if newTarget.Port == dns.COMMON_DNS_PORT {
-		h.dnsCache.Store(raw)
-	}
-
 }
 
 func packUDPHeader(b []byte, addr net.Addr) []byte {
@@ -129,54 +112,36 @@ func packUDPHeader(b []byte, addr net.Addr) []byte {
 // ReceiveTo will be called when data arrives from TUN.
 func (h *udpHandler) ReceiveTo(conn core.UDPConn, data []byte, addr *net.UDPAddr) error {
 	h.Lock()
-	udpsocks, ok1 := h.udpSocks[conn]
-	remoteAddr, ok2 := h.remoteAddrs[conn]
+	udpsocks, ok := h.udpSocks[conn]
 	h.Unlock()
 
-	if !ok1 {
-		dest := net.JoinHostPort(h.proxyHost, strconv.Itoa(int(h.proxyPort)))
-		udpsocks, err := net.Dial("udp", dest)
-		if err != nil {
-			h.Close(conn)
-			return err
-		}
-		h.Lock()
-		h.udpSocks[conn] = udpsocks
-		h.remoteAddrs[conn] = addr
-		h.Unlock()
-	}
-	if !ok2 {
-		remoteAddr = addr
-		h.Lock()
-		h.remoteAddrs[conn] = addr
-		h.Unlock()
-	}
-
-	if !ok1 {
-		go h.fetchSocksData(conn)
-	}
-
-	if answer := h.dnsCache.Query(data); answer != nil {
-		var buf [1024]byte
-		resp, _ := answer.PackBuffer(buf[:])
-		_, err := conn.WriteFrom(resp, addr)
+	if !ok {
 		h.Close(conn)
-		if err != nil {
-			estring := fmt.Sprintf("write dns answer failed: %v", err)
-			log.Println(estring)
-			return errors.New(estring)
-		}
-		return nil
+		log.Println("can not find remote address <-->", conn.LocalAddr().String())
+		return errors.New("can not find remote address")
 	}
 
-	n, err := udpsocks.Write(packUDPHeader(data, remoteAddr))
+	if addr.Port == dns.COMMON_DNS_PORT {
+		if answer := h.dnsCache.Query(data); answer != nil {
+			var buf [1024]byte
+			resp, _ := answer.PackBuffer(buf[:])
+			_, err := conn.WriteFrom(resp, addr)
+			if err != nil {
+				h.Close(conn)
+				log.Println(fmt.Sprintf("write dns answer failed: %v", err))
+				return errors.New("write remote failed")
+			}
+			return nil
+		}
+	}
+
+	n, err := udpsocks.Write(packUDPHeader(data, addr))
 	if err != nil {
 		h.Close(conn)
 		log.Println("write to proxy failed", err)
 		return errors.New("write to proxy failed")
 	}
 	log.Println("write bytes n", n)
-
 	return nil
 }
 
@@ -185,12 +150,9 @@ func (h *udpHandler) Close(conn core.UDPConn) {
 
 	h.Lock()
 	defer h.Unlock()
-
 	if c, ok := h.udpSocks[conn]; ok {
 		c.Close()
 		delete(h.udpSocks, conn)
 	}
-	if _, ok := h.remoteAddrs[conn]; ok {
-		delete(h.remoteAddrs, conn)
-	}
+
 }
