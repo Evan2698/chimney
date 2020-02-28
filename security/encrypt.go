@@ -13,10 +13,10 @@ import (
 )
 
 const (
-	CHACHA_20 = "chacha20"
-	GCM       = "gcm"
-	RAW       = "raw"
-	PLOY1305  = "p1305"
+	CHACHA_20 = "chacha20" //CHACHA_20
+	GCM       = "gcm"      //GCM
+	RAW       = "raw"      //RAW
+	PLOY1305  = "p1305"    //PLOY1305
 )
 
 const (
