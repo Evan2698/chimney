@@ -20,3 +20,11 @@ func Bytes2Int(b []byte) uint32 {
 	binary.Read(bytesBuffer, binary.BigEndian, &tmp)
 	return tmp
 }
+
+// Bytes2Uint16 ...
+func Bytes2Uint16(b []byte) uint16 {
+	bytesBuffer := bytes.NewBuffer(b)
+	var tmp uint16
+	binary.Read(bytesBuffer, binary.BigEndian, &tmp)
+	return tmp
+}
