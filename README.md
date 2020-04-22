@@ -1,6 +1,6 @@
 # Chimney
 
-##discarded
+## discarded
 
 please refer : https://github.com/Evan2698/chimney-go
 
