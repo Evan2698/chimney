@@ -1,5 +1,11 @@
 # Chimney
 
+##discarded
+
+please refer : https://github.com/Evan2698/chimney-go
+
+
+
 Chimney is a infrastructure for vpn. on PCs(windows & linux), server & client communicate with socks5 protocol,It is a separate configurable executable program. It can communicate through configuration and quic protocol, which is fast and simple to configure.
 
 On Android, it is just a component(AAR package) for vpn.
